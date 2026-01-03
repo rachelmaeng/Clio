@@ -55,13 +55,28 @@ final class MealEntry {
 
     enum Sensation: String, CaseIterable, Identifiable {
         case grounded = "Grounded"
-        case bloated = "Bloated"
+        case light = "Light"
+        case heavy = "Heavy"
+        case satisfied = "Satisfied"
+        case mindful = "Mindful"
         case comforted = "Comforted"
         case rushed = "Rushed"
-        case mindful = "Mindful"
-        case craving = "Craving"
+        case nourished = "Nourished"
 
         var id: String { rawValue }
+
+        var icon: String {
+            switch self {
+            case .grounded: return "leaf.fill"
+            case .light: return "wind"
+            case .heavy: return "circle.fill"
+            case .satisfied: return "checkmark.circle.fill"
+            case .mindful: return "brain.head.profile"
+            case .comforted: return "heart.fill"
+            case .rushed: return "hare.fill"
+            case .nourished: return "sparkles"
+            }
+        }
     }
 
     var meal: MealType? {

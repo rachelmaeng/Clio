@@ -59,12 +59,40 @@ class ReflectionGenerator {
                     }
                 }
 
+                let walkSessions = movements.filter { $0.type == "Walk" }
+                if walkSessions.count >= 3 {
+                    reflections.append(Reflection(
+                        category: .movement,
+                        text: "Walking has become a steady rhythm.",
+                        detail: "\(walkSessions.count) walks logged recently."
+                    ))
+                }
+
                 let totalMinutes = movements.compactMap { $0.durationMinutes }.reduce(0, +)
                 if totalMinutes > 100 {
                     reflections.append(Reflection(
                         category: .movement,
                         text: "You've moved with intention this week.",
                         detail: "\(totalMinutes) minutes of mindful movement."
+                    ))
+                }
+
+                let restDays = movements.filter { $0.type == "Rest Day" }
+                if restDays.count >= 2 {
+                    reflections.append(Reflection(
+                        category: .rest,
+                        text: "You're honoring your need for rest.",
+                        detail: "\(restDays.count) intentional rest days taken."
+                    ))
+                }
+
+                // Average energy trend
+                let avgEnergy = movements.reduce(0) { $0 + $1.energyLevel } / max(movements.count, 1)
+                if avgEnergy > 70 {
+                    reflections.append(Reflection(
+                        category: .energy,
+                        text: "Movement is energizing you.",
+                        detail: "Your average energy during movement: \(avgEnergy)%"
                     ))
                 }
             }
@@ -88,6 +116,33 @@ class ReflectionGenerator {
                         detail: "Energized on \(energizedDays) recent days."
                     ))
                 }
+
+                let restedDays = checkIns.filter { $0.state == "Rested" }.count
+                if restedDays >= 2 {
+                    reflections.append(Reflection(
+                        category: .rest,
+                        text: "Rest has been finding you.",
+                        detail: "You felt rested on \(restedDays) days."
+                    ))
+                }
+
+                let openDays = checkIns.filter { $0.state == "Open" }.count
+                if openDays >= 2 {
+                    reflections.append(Reflection(
+                        category: .energy,
+                        text: "Openness has been present in your days.",
+                        detail: "You felt open on \(openDays) recent days."
+                    ))
+                }
+
+                // Consistency insight
+                if checkIns.count >= 5 {
+                    reflections.append(Reflection(
+                        category: .rest,
+                        text: "You're building a practice of noticing.",
+                        detail: "\(checkIns.count) check-ins in the past two weeks."
+                    ))
+                }
             }
 
             // Generate nourishment reflections
@@ -107,6 +162,34 @@ class ReflectionGenerator {
                         category: .nourishment,
                         text: "Your meals have been grounding you.",
                         detail: "\(groundedMeals.count) meals brought a sense of grounding."
+                    ))
+                }
+
+                let nourishedMeals = meals.filter { $0.sensationTags.contains("Nourished") }
+                if nourishedMeals.count >= 2 {
+                    reflections.append(Reflection(
+                        category: .nourishment,
+                        text: "Nourishment has been intentional.",
+                        detail: "\(nourishedMeals.count) meals left you feeling nourished."
+                    ))
+                }
+
+                let satisfiedMeals = meals.filter { $0.sensationTags.contains("Satisfied") }
+                if satisfiedMeals.count >= 2 {
+                    reflections.append(Reflection(
+                        category: .nourishment,
+                        text: "Satisfaction has been present at meals.",
+                        detail: "\(satisfiedMeals.count) satisfying meals logged."
+                    ))
+                }
+
+                // Meal variety insight
+                let mealTypes = Set(meals.map { $0.mealType })
+                if mealTypes.count >= 3 {
+                    reflections.append(Reflection(
+                        category: .nourishment,
+                        text: "You're nourishing throughout the day.",
+                        detail: "Logged breakfast, lunch, and dinner."
                     ))
                 }
             }
@@ -129,7 +212,7 @@ class ReflectionGenerator {
             ))
         }
 
-        // Limit to 6 reflections
-        return Array(reflections.prefix(6))
+        // Shuffle and limit to 6 reflections for variety
+        return Array(reflections.shuffled().prefix(6))
     }
 }
