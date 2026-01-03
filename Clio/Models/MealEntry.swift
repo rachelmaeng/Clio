@@ -1,0 +1,74 @@
+import Foundation
+import SwiftData
+
+@Model
+final class MealEntry {
+    var id: UUID
+    var dateTime: Date
+    var mealType: String
+    var descriptionText: String
+    var sensationTags: [String]
+    var photoData: Data?
+    var calories: Int?
+    var protein: Int?
+    var carbs: Int?
+    var fat: Int?
+    var createdAt: Date
+    var updatedAt: Date
+
+    init(
+        id: UUID = UUID(),
+        dateTime: Date = Date(),
+        mealType: String,
+        descriptionText: String = "",
+        sensationTags: [String] = [],
+        photoData: Data? = nil,
+        calories: Int? = nil,
+        protein: Int? = nil,
+        carbs: Int? = nil,
+        fat: Int? = nil,
+        createdAt: Date = Date(),
+        updatedAt: Date = Date()
+    ) {
+        self.id = id
+        self.dateTime = dateTime
+        self.mealType = mealType
+        self.descriptionText = descriptionText
+        self.sensationTags = sensationTags
+        self.photoData = photoData
+        self.calories = calories
+        self.protein = protein
+        self.carbs = carbs
+        self.fat = fat
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
+
+    enum MealType: String, CaseIterable, Identifiable {
+        case breakfast = "Breakfast"
+        case lunch = "Lunch"
+        case dinner = "Dinner"
+        case snack = "Snack"
+
+        var id: String { rawValue }
+    }
+
+    enum Sensation: String, CaseIterable, Identifiable {
+        case grounded = "Grounded"
+        case bloated = "Bloated"
+        case comforted = "Comforted"
+        case rushed = "Rushed"
+        case mindful = "Mindful"
+        case craving = "Craving"
+
+        var id: String { rawValue }
+    }
+
+    var meal: MealType? {
+        MealType(rawValue: mealType)
+    }
+
+    var hasNutritionData: Bool {
+        calories != nil || protein != nil || carbs != nil || fat != nil
+    }
+}

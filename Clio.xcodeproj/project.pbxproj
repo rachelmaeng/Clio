@@ -1,0 +1,441 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10000010000000000000001 /* ClioApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000001 /* ClioApp.swift */; };
+		A10000020000000000000002 /* ClioTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000020000000000000002 /* ClioTheme.swift */; };
+		A10000030000000000000003 /* UserSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000030000000000000003 /* UserSettings.swift */; };
+		A10000040000000000000004 /* DailyCheckIn.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000040000000000000004 /* DailyCheckIn.swift */; };
+		A10000050000000000000005 /* MovementEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000050000000000000005 /* MovementEntry.swift */; };
+		A10000060000000000000006 /* MealEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000060000000000000006 /* MealEntry.swift */; };
+		A10000070000000000000007 /* BodyStateCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000070000000000000007 /* BodyStateCard.swift */; };
+		A10000080000000000000008 /* MovementTypeCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000080000000000000008 /* MovementTypeCard.swift */; };
+		A10000090000000000000009 /* EnergySlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000090000000000000009 /* EnergySlider.swift */; };
+		A1000010000000000000000A /* SensationChip.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000010000000000000000A /* SensationChip.swift */; };
+		A1000011000000000000000B /* ReflectionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000011000000000000000B /* ReflectionCard.swift */; };
+		A1000012000000000000000C /* DailyCheckInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000012000000000000000C /* DailyCheckInView.swift */; };
+		A1000013000000000000000D /* MovementLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000013000000000000000D /* MovementLogView.swift */; };
+		A1000014000000000000000E /* NourishmentLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000014000000000000000E /* NourishmentLogView.swift */; };
+		A1000015000000000000000F /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000015000000000000000F /* HomeView.swift */; };
+		A10000160000000000000010 /* ReflectionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000160000000000000010 /* ReflectionsView.swift */; };
+		A10000170000000000000011 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000170000000000000011 /* SettingsView.swift */; };
+		A10000180000000000000012 /* ReflectionGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000180000000000000012 /* ReflectionGenerator.swift */; };
+		A10000190000000000000013 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000190000000000000013 /* Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A20000010000000000000001 /* ClioApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClioApp.swift; sourceTree = "<group>"; };
+		A20000020000000000000002 /* ClioTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClioTheme.swift; sourceTree = "<group>"; };
+		A20000030000000000000003 /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
+		A20000040000000000000004 /* DailyCheckIn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyCheckIn.swift; sourceTree = "<group>"; };
+		A20000050000000000000005 /* MovementEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovementEntry.swift; sourceTree = "<group>"; };
+		A20000060000000000000006 /* MealEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealEntry.swift; sourceTree = "<group>"; };
+		A20000070000000000000007 /* BodyStateCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyStateCard.swift; sourceTree = "<group>"; };
+		A20000080000000000000008 /* MovementTypeCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovementTypeCard.swift; sourceTree = "<group>"; };
+		A20000090000000000000009 /* EnergySlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnergySlider.swift; sourceTree = "<group>"; };
+		A2000010000000000000000A /* SensationChip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensationChip.swift; sourceTree = "<group>"; };
+		A2000011000000000000000B /* ReflectionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionCard.swift; sourceTree = "<group>"; };
+		A2000012000000000000000C /* DailyCheckInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyCheckInView.swift; sourceTree = "<group>"; };
+		A2000013000000000000000D /* MovementLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovementLogView.swift; sourceTree = "<group>"; };
+		A2000014000000000000000E /* NourishmentLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NourishmentLogView.swift; sourceTree = "<group>"; };
+		A2000015000000000000000F /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		A20000160000000000000010 /* ReflectionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionsView.swift; sourceTree = "<group>"; };
+		A20000170000000000000011 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		A20000180000000000000012 /* ReflectionGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionGenerator.swift; sourceTree = "<group>"; };
+		A20000190000000000000013 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A3000001000000000000001A /* Clio.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Clio.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A4000001000000000000001B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A5000001000000000000001C /* = Clio */ = {
+			isa = PBXGroup;
+			children = (
+				A5000002000000000000001D /* Clio */,
+				A5000003000000000000001E /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A5000002000000000000001D /* Clio */ = {
+			isa = PBXGroup;
+			children = (
+				A20000010000000000000001 /* ClioApp.swift */,
+				A5000004000000000000001F /* Theme */,
+				A50000050000000000000020 /* Models */,
+				A50000060000000000000021 /* Components */,
+				A50000070000000000000022 /* Views */,
+				A50000080000000000000023 /* Utilities */,
+				A20000190000000000000013 /* Assets.xcassets */,
+			);
+			path = Clio;
+			sourceTree = "<group>";
+		};
+		A5000003000000000000001E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A3000001000000000000001A /* Clio.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A5000004000000000000001F /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				A20000020000000000000002 /* ClioTheme.swift */,
+			);
+			path = Theme;
+			sourceTree = "<group>";
+		};
+		A50000050000000000000020 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A20000030000000000000003 /* UserSettings.swift */,
+				A20000040000000000000004 /* DailyCheckIn.swift */,
+				A20000050000000000000005 /* MovementEntry.swift */,
+				A20000060000000000000006 /* MealEntry.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		A50000060000000000000021 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				A20000070000000000000007 /* BodyStateCard.swift */,
+				A20000080000000000000008 /* MovementTypeCard.swift */,
+				A20000090000000000000009 /* EnergySlider.swift */,
+				A2000010000000000000000A /* SensationChip.swift */,
+				A2000011000000000000000B /* ReflectionCard.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		A50000070000000000000022 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A2000012000000000000000C /* DailyCheckInView.swift */,
+				A2000013000000000000000D /* MovementLogView.swift */,
+				A2000014000000000000000E /* NourishmentLogView.swift */,
+				A2000015000000000000000F /* HomeView.swift */,
+				A20000160000000000000010 /* ReflectionsView.swift */,
+				A20000170000000000000011 /* SettingsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		A50000080000000000000023 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				A20000180000000000000012 /* ReflectionGenerator.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A6000001000000000000002A /* Clio */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A7000001000000000000002B /* Build configuration list for PBXNativeTarget "Clio" */;
+			buildPhases = (
+				A8000001000000000000002C /* Sources */,
+				A4000001000000000000001B /* Frameworks */,
+				A9000001000000000000002D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Clio;
+			productName = Clio;
+			productReference = A3000001000000000000001A /* Clio.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AA000001000000000000002E /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1540;
+				LastUpgradeCheck = 1540;
+				TargetAttributes = {
+					A6000001000000000000002A = {
+						CreatedOnToolsVersion = 15.4;
+					};
+				};
+			};
+			buildConfigurationList = AB000001000000000000002F /* Build configuration list for PBXProject "Clio" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A5000001000000000000001C;
+			productRefGroup = A5000003000000000000001E /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A6000001000000000000002A /* Clio */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A9000001000000000000002D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000190000000000000013 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A8000001000000000000002C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000010000000000000001 /* ClioApp.swift in Sources */,
+				A10000020000000000000002 /* ClioTheme.swift in Sources */,
+				A10000030000000000000003 /* UserSettings.swift in Sources */,
+				A10000040000000000000004 /* DailyCheckIn.swift in Sources */,
+				A10000050000000000000005 /* MovementEntry.swift in Sources */,
+				A10000060000000000000006 /* MealEntry.swift in Sources */,
+				A10000070000000000000007 /* BodyStateCard.swift in Sources */,
+				A10000080000000000000008 /* MovementTypeCard.swift in Sources */,
+				A10000090000000000000009 /* EnergySlider.swift in Sources */,
+				A1000010000000000000000A /* SensationChip.swift in Sources */,
+				A1000011000000000000000B /* ReflectionCard.swift in Sources */,
+				A1000012000000000000000C /* DailyCheckInView.swift in Sources */,
+				A1000013000000000000000D /* MovementLogView.swift in Sources */,
+				A1000014000000000000000E /* NourishmentLogView.swift in Sources */,
+				A1000015000000000000000F /* HomeView.swift in Sources */,
+				A10000160000000000000010 /* ReflectionsView.swift in Sources */,
+				A10000170000000000000011 /* SettingsView.swift in Sources */,
+				A10000180000000000000012 /* ReflectionGenerator.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		AC000001000000000000003A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		AC000002000000000000003B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		AD000001000000000000003C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Clio;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.clio.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		AD000002000000000000003D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Clio;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.clio.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A7000001000000000000002B /* Build configuration list for PBXNativeTarget "Clio" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AD000001000000000000003C /* Debug */,
+				AD000002000000000000003D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AB000001000000000000002F /* Build configuration list for PBXProject "Clio" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AC000001000000000000003A /* Debug */,
+				AC000002000000000000003B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = AA000001000000000000002E /* Project object */;
+}
