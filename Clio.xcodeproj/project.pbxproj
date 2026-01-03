@@ -28,6 +28,9 @@
 		A10000190000000000000013 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000190000000000000013 /* Assets.xcassets */; };
 		A1000020000000000000001A /* HapticFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000020000000000000001A /* HapticFeedback.swift */; };
 		A1000021000000000000001B /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000021000000000000001B /* OnboardingView.swift */; };
+		A1000022000000000000001C /* AnimationHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000022000000000000001C /* AnimationHelpers.swift */; };
+		A1000023000000000000001D /* KeyboardHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000023000000000000001D /* KeyboardHelpers.swift */; };
+		A1000024000000000000001E /* DataExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000024000000000000001E /* DataExporter.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -52,6 +55,9 @@
 		A20000190000000000000013 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A2000020000000000000001A /* HapticFeedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticFeedback.swift; sourceTree = "<group>"; };
 		A2000021000000000000001B /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		A2000022000000000000001C /* AnimationHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimationHelpers.swift; sourceTree = "<group>"; };
+		A2000023000000000000001D /* KeyboardHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardHelpers.swift; sourceTree = "<group>"; };
+		A2000024000000000000001E /* DataExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataExporter.swift; sourceTree = "<group>"; };
 		A3000001000000000000001A /* Clio.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Clio.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -146,6 +152,9 @@
 			children = (
 				A20000180000000000000012 /* ReflectionGenerator.swift */,
 				A2000020000000000000001A /* HapticFeedback.swift */,
+				A2000022000000000000001C /* AnimationHelpers.swift */,
+				A2000023000000000000001D /* KeyboardHelpers.swift */,
+				A2000024000000000000001E /* DataExporter.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -239,6 +248,9 @@
 				A10000180000000000000012 /* ReflectionGenerator.swift in Sources */,
 				A1000020000000000000001A /* HapticFeedback.swift in Sources */,
 				A1000021000000000000001B /* OnboardingView.swift in Sources */,
+				A1000022000000000000001C /* AnimationHelpers.swift in Sources */,
+				A1000023000000000000001D /* KeyboardHelpers.swift in Sources */,
+				A1000024000000000000001E /* DataExporter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

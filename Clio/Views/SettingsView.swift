@@ -5,6 +5,11 @@ struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var userSettings: [UserSettings]
 
+    @State private var showExportSheet = false
+    @State private var showClearConfirmation = false
+    @State private var exportURL: URL?
+    @State private var dataCounts: (checkIns: Int, movements: Int, meals: Int) = (0, 0, 0)
+
     private var settings: UserSettings? {
         userSettings.first
     }
@@ -70,13 +75,23 @@ struct SettingsView: View {
                                 .font(.headline)
                                 .foregroundStyle(ClioTheme.text)
 
+                            // Data summary
+                            if dataCounts.checkIns > 0 || dataCounts.movements > 0 || dataCounts.meals > 0 {
+                                HStack(spacing: 16) {
+                                    DataCountBadge(count: dataCounts.checkIns, label: "Check-ins", icon: "heart.fill")
+                                    DataCountBadge(count: dataCounts.movements, label: "Movements", icon: "figure.walk")
+                                    DataCountBadge(count: dataCounts.meals, label: "Meals", icon: "leaf.fill")
+                                }
+                                .padding(.bottom, 8)
+                            }
+
                             VStack(spacing: 0) {
                                 SettingsNavigationRow(
                                     icon: "square.and.arrow.up",
                                     title: "Export data",
                                     subtitle: "Download your logs as JSON"
                                 ) {
-                                    // Export action
+                                    exportData()
                                 }
 
                                 Divider()
@@ -88,7 +103,8 @@ struct SettingsView: View {
                                     subtitle: "Remove all logged entries",
                                     isDestructive: true
                                 ) {
-                                    // Clear data action
+                                    HapticFeedback.warning.trigger()
+                                    showClearConfirmation = true
                                 }
                             }
                             .background(ClioTheme.surface)
@@ -161,6 +177,20 @@ struct SettingsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 ensureSettingsExist()
+                loadDataCounts()
+            }
+            .sheet(isPresented: $showExportSheet) {
+                if let url = exportURL {
+                    ShareSheet(items: [url])
+                }
+            }
+            .alert("Clear All Data?", isPresented: $showClearConfirmation) {
+                Button("Cancel", role: .cancel) { }
+                Button("Clear", role: .destructive) {
+                    clearAllData()
+                }
+            } message: {
+                Text("This will permanently remove all your check-ins, movements, and meals. This action cannot be undone.")
             }
         }
     }
@@ -173,6 +203,35 @@ struct SettingsView: View {
         }
     }
 
+    private func loadDataCounts() {
+        let exporter = DataExporter(modelContext: modelContext)
+        dataCounts = exporter.getDataCounts()
+    }
+
+    private func exportData() {
+        let exporter = DataExporter(modelContext: modelContext)
+        do {
+            exportURL = try exporter.getExportURL()
+            HapticFeedback.success.trigger()
+            showExportSheet = true
+        } catch {
+            print("Export failed: \(error)")
+            HapticFeedback.error.trigger()
+        }
+    }
+
+    private func clearAllData() {
+        let exporter = DataExporter(modelContext: modelContext)
+        do {
+            try exporter.clearAllData()
+            HapticFeedback.success.trigger()
+            loadDataCounts()
+        } catch {
+            print("Clear failed: \(error)")
+            HapticFeedback.error.trigger()
+        }
+    }
+
     private func updateSetting<T>(_ keyPath: WritableKeyPath<UserSettings, T>, value: T) {
         if let existingSettings = settings {
             var mutableSettings = existingSettings
@@ -180,6 +239,42 @@ struct SettingsView: View {
             try? modelContext.save()
         }
     }
+}
+
+struct DataCountBadge: View {
+    let count: Int
+    let label: String
+    let icon: String
+
+    var body: some View {
+        VStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.caption)
+                .foregroundStyle(ClioTheme.primary)
+
+            Text("\(count)")
+                .font(.headline)
+                .foregroundStyle(ClioTheme.text)
+
+            Text(label)
+                .font(.caption2)
+                .foregroundStyle(ClioTheme.textMuted)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+        .background(ClioTheme.surface)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+}
+
+struct ShareSheet: UIViewControllerRepresentable {
+    let items: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 struct SettingsToggleRow: View {
