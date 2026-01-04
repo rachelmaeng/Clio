@@ -56,9 +56,12 @@ struct HomeView: View {
                                 .foregroundStyle(ClioTheme.textMuted)
                         }
                         .padding(.top, 8)
+                        .fadeInFromBottom(delay: 0)
 
                         // Contextual CTA Card
                         contextualCTACard
+                            .fadeInFromBottom(delay: 0.1)
+                            .breathingGlow(color: ClioTheme.primary)
 
                         // Today's Activity Summary
                         if !todayMeals.isEmpty || !todayMovements.isEmpty || todayCheckIn != nil {
@@ -70,36 +73,40 @@ struct HomeView: View {
                                 VStack(spacing: 12) {
                                     if let checkIn = todayCheckIn {
                                         TodaySummaryRow(
-                                            icon: "heart.fill",
-                                            color: ClioTheme.primary,
+                                            icon: "heart.circle.fill",
+                                            color: ClioTheme.checkInColor,
                                             title: "Feeling \(checkIn.state)",
                                             subtitle: formatTime(checkIn.createdAt)
                                         )
+                                        .staggeredAppearance(index: 0)
                                     }
 
                                     if !todayMovements.isEmpty {
                                         let totalMinutes = todayMovements.compactMap { $0.durationMinutes }.reduce(0, +)
                                         TodaySummaryRow(
                                             icon: "figure.walk",
-                                            color: ClioTheme.primary,
+                                            color: ClioTheme.movementColor,
                                             title: "\(todayMovements.count) movement\(todayMovements.count == 1 ? "" : "s")",
                                             subtitle: "\(totalMinutes) minutes total"
                                         )
+                                        .staggeredAppearance(index: 1)
                                     }
 
                                     if !todayMeals.isEmpty {
                                         TodaySummaryRow(
-                                            icon: "leaf.fill",
-                                            color: Color(hex: "2DD4BF"),
+                                            icon: "fork.knife",
+                                            color: ClioTheme.mealColor,
                                             title: "\(todayMeals.count) meal\(todayMeals.count == 1 ? "" : "s") logged",
                                             subtitle: todayMeals.map { $0.mealType }.joined(separator: ", ")
                                         )
+                                        .staggeredAppearance(index: 2)
                                     }
                                 }
                                 .padding()
                                 .background(ClioTheme.surface)
                                 .clipShape(RoundedRectangle(cornerRadius: 16))
                             }
+                            .fadeInFromBottom(delay: 0.2)
                         }
 
                         // Quick Actions
@@ -110,30 +117,34 @@ struct HomeView: View {
 
                             HStack(spacing: 12) {
                                 QuickActionButton(
-                                    icon: "heart.fill",
+                                    icon: "heart.circle.fill",
                                     title: "Check-in",
-                                    color: ClioTheme.primary
+                                    color: ClioTheme.checkInColor
                                 ) {
                                     showCheckIn = true
                                 }
+                                .staggeredAppearance(index: 0, delay: 0.08)
 
                                 QuickActionButton(
                                     icon: "figure.walk",
                                     title: "Movement",
-                                    color: ClioTheme.primary
+                                    color: ClioTheme.movementColor
                                 ) {
                                     showMovementLog = true
                                 }
+                                .staggeredAppearance(index: 1, delay: 0.08)
 
                                 QuickActionButton(
-                                    icon: "leaf.fill",
+                                    icon: "fork.knife",
                                     title: "Meal",
-                                    color: Color(hex: "2DD4BF")
+                                    color: ClioTheme.mealColor
                                 ) {
                                     showNourishmentLog = true
                                 }
+                                .staggeredAppearance(index: 2, delay: 0.08)
                             }
                         }
+                        .fadeInFromBottom(delay: 0.3)
 
                         // Gentle reminder
                         VStack(alignment: .leading, spacing: 8) {
@@ -153,6 +164,7 @@ struct HomeView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(ClioTheme.surface.opacity(0.5))
                         .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .fadeInFromBottom(delay: 0.4)
                     }
                     .padding()
                     .padding(.bottom, 100)
@@ -183,40 +195,40 @@ struct HomeView: View {
                     title: "How are you feeling?",
                     subtitle: "Take a moment to notice your body's state",
                     buttonText: "Check in",
-                    color: ClioTheme.primary
+                    color: ClioTheme.checkInColor
                 ) {
                     showCheckIn = true
                 }
             } else if hour >= 11 && hour < 14 && !todayMeals.contains(where: { $0.mealType == "Lunch" }) {
                 // Lunch time, no lunch logged
                 CTACard(
-                    icon: "leaf.fill",
+                    icon: "fork.knife",
                     title: "Midday nourishment",
                     subtitle: "What's fueling your afternoon?",
                     buttonText: "Log meal",
-                    color: Color(hex: "2DD4BF")
+                    color: ClioTheme.mealColor
                 ) {
                     showNourishmentLog = true
                 }
             } else if hour >= 17 && hour < 20 && !todayMeals.contains(where: { $0.mealType == "Dinner" }) {
                 // Dinner time
                 CTACard(
-                    icon: "moon.fill",
+                    icon: "moon.stars.fill",
                     title: "Evening nourishment",
                     subtitle: "How are you closing the day?",
                     buttonText: "Log meal",
-                    color: Color(hex: "818CF8")
+                    color: ClioTheme.sky
                 ) {
                     showNourishmentLog = true
                 }
             } else if todayMovements.isEmpty {
                 // No movement logged
                 CTACard(
-                    icon: "figure.wave",
+                    icon: "figure.walk",
                     title: "Any movement today?",
                     subtitle: "Even rest is a choice worth noting",
                     buttonText: "Log movement",
-                    color: ClioTheme.primary
+                    color: ClioTheme.movementColor
                 ) {
                     showMovementLog = true
                 }
@@ -227,7 +239,7 @@ struct HomeView: View {
                     title: "You're doing great",
                     subtitle: "Every moment of awareness matters",
                     buttonText: nil,
-                    color: ClioTheme.primary
+                    color: ClioTheme.sage
                 ) {}
             }
         }
@@ -340,11 +352,20 @@ struct QuickActionButton: View {
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
+        Button {
+            HapticFeedback.light.trigger()
+            action()
+        } label: {
             VStack(spacing: 12) {
-                Image(systemName: icon)
-                    .font(.title2)
-                    .foregroundStyle(color)
+                ZStack {
+                    Circle()
+                        .fill(color.opacity(0.15))
+                        .frame(width: 44, height: 44)
+
+                    Image(systemName: icon)
+                        .font(.title3)
+                        .foregroundStyle(color)
+                }
 
                 Text(title)
                     .font(.caption)
@@ -356,7 +377,21 @@ struct QuickActionButton: View {
             .background(ClioTheme.surface)
             .clipShape(RoundedRectangle(cornerRadius: 16))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(QuickActionButtonStyle(color: color))
+    }
+}
+
+struct QuickActionButtonStyle: ButtonStyle {
+    let color: Color
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(color.opacity(configuration.isPressed ? 0.4 : 0), lineWidth: 2)
+            )
+            .animation(.clioQuick, value: configuration.isPressed)
     }
 }
 

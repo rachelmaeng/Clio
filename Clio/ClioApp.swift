@@ -27,14 +27,25 @@ struct MainTabView: View {
 
     enum Tab: String, CaseIterable {
         case home = "Home"
+        case log = "Log"
         case reflections = "Reflect"
         case settings = "Settings"
 
         var icon: String {
             switch self {
             case .home: return "house.fill"
-            case .reflections: return "sparkles"
+            case .log: return "plus.circle.fill"
+            case .reflections: return "chart.line.uptrend.xyaxis"
             case .settings: return "gearshape.fill"
+            }
+        }
+
+        var color: Color {
+            switch self {
+            case .home: return ClioTheme.primary
+            case .log: return ClioTheme.primary
+            case .reflections: return ClioTheme.primary
+            case .settings: return ClioTheme.primary
             }
         }
     }
@@ -49,6 +60,12 @@ struct MainTabView: View {
                     .tag(Tab.home)
                     .tabItem {
                         Label(Tab.home.rawValue, systemImage: Tab.home.icon)
+                    }
+
+                LogView()
+                    .tag(Tab.log)
+                    .tabItem {
+                        Label(Tab.log.rawValue, systemImage: Tab.log.icon)
                     }
 
                 ReflectionsView()

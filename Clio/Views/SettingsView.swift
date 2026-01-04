@@ -78,9 +78,9 @@ struct SettingsView: View {
                             // Data summary
                             if dataCounts.checkIns > 0 || dataCounts.movements > 0 || dataCounts.meals > 0 {
                                 HStack(spacing: 16) {
-                                    DataCountBadge(count: dataCounts.checkIns, label: "Check-ins", icon: "heart.fill")
-                                    DataCountBadge(count: dataCounts.movements, label: "Movements", icon: "figure.walk")
-                                    DataCountBadge(count: dataCounts.meals, label: "Meals", icon: "leaf.fill")
+                                    DataCountBadge(count: dataCounts.checkIns, label: "Check-ins", icon: "heart.circle.fill", color: ClioTheme.checkInColor)
+                                    DataCountBadge(count: dataCounts.movements, label: "Movements", icon: "figure.walk", color: ClioTheme.movementColor)
+                                    DataCountBadge(count: dataCounts.meals, label: "Meals", icon: "fork.knife", color: ClioTheme.mealColor)
                                 }
                                 .padding(.bottom, 8)
                             }
@@ -245,12 +245,13 @@ struct DataCountBadge: View {
     let count: Int
     let label: String
     let icon: String
+    var color: Color = ClioTheme.primary
 
     var body: some View {
         VStack(spacing: 6) {
             Image(systemName: icon)
                 .font(.caption)
-                .foregroundStyle(ClioTheme.primary)
+                .foregroundStyle(color)
 
             Text("\(count)")
                 .font(.headline)

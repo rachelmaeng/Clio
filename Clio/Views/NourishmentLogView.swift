@@ -9,6 +9,7 @@ struct NourishmentLogView: View {
     @State private var descriptionText: String = ""
     @State private var selectedSensations: Set<MealEntry.Sensation> = []
     @State private var showDetails = false
+    @State private var selectedPhotoData: Data?
 
     // Nutrition details (hidden by default)
     @State private var calories: String = ""
@@ -50,7 +51,7 @@ struct NourishmentLogView: View {
                                             .padding(.vertical, 12)
                                             .padding(.horizontal, 20)
                                             .background(
-                                                selectedMealType == type ? ClioTheme.background : Color.clear
+                                                selectedMealType == type ? ClioTheme.mealColor.opacity(0.2) : Color.clear
                                             )
                                             .clipShape(RoundedRectangle(cornerRadius: 12))
                                     }
@@ -62,6 +63,16 @@ struct NourishmentLogView: View {
                             .clipShape(RoundedRectangle(cornerRadius: 16))
                         }
 
+                        // Photo capture
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Capture your meal")
+                                .font(.title3)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(ClioTheme.text)
+
+                            PhotoCapture(selectedImageData: $selectedPhotoData)
+                        }
+
                         // Food description
                         VStack(alignment: .leading, spacing: 12) {
                             Text("What nourished you?")
@@ -71,7 +82,7 @@ struct NourishmentLogView: View {
 
                             ZStack(alignment: .topLeading) {
                                 if descriptionText.isEmpty {
-                                    Text("Warm grain bowl with avocado, seeds, and lemon tahini dressing...")
+                                    Text("Describe your meal, or let AI analyze your photo...")
                                         .foregroundStyle(ClioTheme.textMuted.opacity(0.6))
                                         .padding(.horizontal, 16)
                                         .padding(.vertical, 16)
@@ -80,31 +91,35 @@ struct NourishmentLogView: View {
                                 TextEditor(text: $descriptionText)
                                     .scrollContentBackground(.hidden)
                                     .foregroundStyle(ClioTheme.text)
-                                    .frame(minHeight: 140)
+                                    .frame(minHeight: 100)
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 12)
                             }
                             .background(ClioTheme.surface)
                             .clipShape(RoundedRectangle(cornerRadius: 16))
-                            .overlay(alignment: .bottomTrailing) {
-                                HStack(spacing: 8) {
-                                    Button {
-                                        // Photo action
-                                    } label: {
-                                        Image(systemName: "camera.fill")
-                                            .foregroundStyle(ClioTheme.textMuted)
-                                            .padding(8)
-                                    }
 
-                                    Button {
-                                        // Voice action
-                                    } label: {
-                                        Image(systemName: "mic.fill")
-                                            .foregroundStyle(ClioTheme.textMuted)
-                                            .padding(8)
+                            // Quick food suggestions
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 8) {
+                                    ForEach(["Salad", "Sandwich", "Soup", "Rice bowl", "Pasta", "Smoothie"], id: \.self) { suggestion in
+                                        Button {
+                                            if descriptionText.isEmpty {
+                                                descriptionText = suggestion
+                                            } else {
+                                                descriptionText += ", \(suggestion.lowercased())"
+                                            }
+                                        } label: {
+                                            Text(suggestion)
+                                                .font(.caption)
+                                                .foregroundStyle(ClioTheme.textMuted)
+                                                .padding(.horizontal, 12)
+                                                .padding(.vertical, 8)
+                                                .background(ClioTheme.surface)
+                                                .clipShape(Capsule())
+                                        }
+                                        .buttonStyle(.plain)
                                     }
                                 }
-                                .padding(8)
                             }
                         }
 
@@ -217,6 +232,7 @@ struct NourishmentLogView: View {
             mealType: selectedMealType.rawValue,
             descriptionText: descriptionText,
             sensationTags: selectedSensations.map { $0.rawValue },
+            photoData: selectedPhotoData,
             calories: Int(calories),
             protein: Int(protein),
             carbs: Int(carbs),
@@ -227,9 +243,11 @@ struct NourishmentLogView: View {
 
         do {
             try modelContext.save()
+            HapticFeedback.success.trigger()
             dismiss()
         } catch {
             print("Failed to save meal: \(error)")
+            HapticFeedback.error.trigger()
         }
     }
 }

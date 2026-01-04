@@ -1,27 +1,46 @@
 import SwiftUI
 
 enum ClioTheme {
-    // MARK: - Colors
+    // MARK: - Core Colors
     static let background = Color(hex: "121022")
     static let surface = Color(hex: "1c1a2e")
     static let surfaceHighlight = Color(hex: "252540")
     static let text = Color.white
     static let textMuted = Color(hex: "9f9db9")
-    static let primary = Color(hex: "2111d4")
-    static let primaryGlow = Color(hex: "2111d4").opacity(0.3)
+
+    // MARK: - Primary (Soft Lavender)
+    static let primary = Color(hex: "A78BFA")
+    static let primaryGlow = Color(hex: "A78BFA").opacity(0.3)
+    static let primaryDark = Color(hex: "8B5CF6")
+
+    // MARK: - Accent Palette (Soft Pastels)
+    static let coral = Color(hex: "E8B4B8")       // Dusty rose - meals/nourishment
+    static let teal = Color(hex: "B8D4E3")        // Soft blue-gray - movements
+    static let rose = Color(hex: "D4B8E0")        // Soft lilac - check-ins/feelings
+    static let amber = Color(hex: "E0D4B8")       // Warm beige - energy
+    static let sage = Color(hex: "C5D5C5")        // Muted sage - success/positive
+    static let sky = Color(hex: "C5CDE0")         // Soft periwinkle - calm states
+    static let peach = Color(hex: "E8D4C4")       // Soft peach - warmth
 
     // MARK: - Semantic Colors (no shame, no red)
     static let accent = primary
-    static let success = Color(hex: "6366f1") // Soft indigo, not harsh green
+    static let success = sage
     static let neutral = textMuted
+
+    // MARK: - Category Colors
+    static let mealColor = coral
+    static let movementColor = teal
+    static let checkInColor = rose
+    static let energyColor = amber
+    static let restColor = sky
 
     // MARK: - Gradients
     static var ambientGradient: LinearGradient {
         LinearGradient(
             colors: [
                 background,
-                Color(hex: "18162e"),
-                Color(hex: "211d38")
+                Color(hex: "1a1730"),
+                Color(hex: "241f3d")
             ],
             startPoint: .top,
             endPoint: .bottom
@@ -30,15 +49,45 @@ enum ClioTheme {
 
     static var primaryButtonGradient: LinearGradient {
         LinearGradient(
-            colors: [primary, primary.opacity(0.8)],
+            colors: [primary, primaryDark],
             startPoint: .leading,
             endPoint: .trailing
+        )
+    }
+
+    static var mealGradient: LinearGradient {
+        LinearGradient(
+            colors: [coral, Color(hex: "D9A5A9")],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    static var movementGradient: LinearGradient {
+        LinearGradient(
+            colors: [teal, Color(hex: "A9C5D4")],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    static var checkInGradient: LinearGradient {
+        LinearGradient(
+            colors: [rose, Color(hex: "C5A9D1")],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
         )
     }
 
     static var cardGlow: some View {
         RoundedRectangle(cornerRadius: 16)
             .fill(primary.opacity(0.1))
+            .blur(radius: 20)
+    }
+
+    static func accentGlow(_ color: Color) -> some View {
+        RoundedRectangle(cornerRadius: 16)
+            .fill(color.opacity(0.15))
             .blur(radius: 20)
     }
 

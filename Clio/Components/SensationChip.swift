@@ -10,22 +10,22 @@ struct SensationChip: View {
             Text(sensation.rawValue)
                 .font(.subheadline)
                 .fontWeight(isSelected ? .semibold : .medium)
-                .foregroundStyle(isSelected ? .white : ClioTheme.textMuted)
+                .foregroundStyle(isSelected ? ClioTheme.background : ClioTheme.textMuted)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
                 .background(
-                    isSelected ? ClioTheme.primary : ClioTheme.surface
+                    isSelected ? ClioTheme.mealColor : ClioTheme.surface
                 )
                 .clipShape(Capsule())
                 .overlay(
                     Capsule()
                         .stroke(
-                            isSelected ? ClioTheme.primary : Color.white.opacity(0.05),
+                            isSelected ? ClioTheme.mealColor : Color.white.opacity(0.05),
                             lineWidth: 1
                         )
                 )
                 .shadow(
-                    color: isSelected ? ClioTheme.primary.opacity(0.4) : .clear,
+                    color: isSelected ? ClioTheme.mealColor.opacity(0.4) : .clear,
                     radius: 8, x: 0, y: 2
                 )
         }
