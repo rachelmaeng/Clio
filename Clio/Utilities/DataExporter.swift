@@ -3,20 +3,23 @@ import SwiftData
 
 struct ExportData: Codable {
     let exportDate: Date
-    let checkIns: [CheckInExport]
+    let feelChecks: [FeelCheckExport]
     let movements: [MovementExport]
     let meals: [MealExport]
 
-    struct CheckInExport: Codable {
-        let date: Date
-        let state: String
+    struct FeelCheckExport: Codable {
+        let dateTime: Date
+        let energyLevel: Int
+        let moods: [String]
+        let bodySensations: [String]
+        let notes: String?
         let createdAt: Date
     }
 
     struct MovementExport: Codable {
         let dateTime: Date
         let type: String
-        let energyLevel: Int
+        let intensityLevel: Int?
         let durationMinutes: Int?
         let notes: String?
         let createdAt: Date
@@ -26,7 +29,7 @@ struct ExportData: Codable {
         let dateTime: Date
         let mealType: String
         let description: String
-        let sensations: [String]
+        let bodyResponses: [String]
         let calories: Int?
         let protein: Int?
         let carbs: Int?
@@ -45,7 +48,7 @@ class DataExporter {
 
     func exportToJSON() throws -> Data {
         // Fetch all data
-        let checkInDescriptor = FetchDescriptor<DailyCheckIn>(
+        let feelCheckDescriptor = FetchDescriptor<FeelCheck>(
             sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
         )
         let movementDescriptor = FetchDescriptor<MovementEntry>(
@@ -55,16 +58,19 @@ class DataExporter {
             sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
         )
 
-        let checkIns = try modelContext.fetch(checkInDescriptor)
+        let feelChecks = try modelContext.fetch(feelCheckDescriptor)
         let movements = try modelContext.fetch(movementDescriptor)
         let meals = try modelContext.fetch(mealDescriptor)
 
         // Convert to export format
-        let exportCheckIns = checkIns.map { checkIn in
-            ExportData.CheckInExport(
-                date: checkIn.date,
-                state: checkIn.state,
-                createdAt: checkIn.createdAt
+        let exportFeelChecks = feelChecks.map { check in
+            ExportData.FeelCheckExport(
+                dateTime: check.dateTime,
+                energyLevel: check.energyLevel,
+                moods: check.moods,
+                bodySensations: check.bodySensations,
+                notes: check.notes,
+                createdAt: check.createdAt
             )
         }
 
@@ -72,7 +78,7 @@ class DataExporter {
             ExportData.MovementExport(
                 dateTime: movement.dateTime,
                 type: movement.type,
-                energyLevel: movement.energyLevel,
+                intensityLevel: movement.intensityLevel,
                 durationMinutes: movement.durationMinutes,
                 notes: movement.notes,
                 createdAt: movement.createdAt
@@ -84,7 +90,7 @@ class DataExporter {
                 dateTime: meal.dateTime,
                 mealType: meal.mealType,
                 description: meal.descriptionText,
-                sensations: meal.sensationTags,
+                bodyResponses: meal.bodyResponses,
                 calories: meal.calories,
                 protein: meal.protein,
                 carbs: meal.carbs,
@@ -95,7 +101,7 @@ class DataExporter {
 
         let exportData = ExportData(
             exportDate: Date(),
-            checkIns: exportCheckIns,
+            feelChecks: exportFeelChecks,
             movements: exportMovements,
             meals: exportMeals
         )
@@ -123,12 +129,12 @@ class DataExporter {
 
     func clearAllData() throws {
         // Fetch and delete all entries
-        let checkIns = try modelContext.fetch(FetchDescriptor<DailyCheckIn>())
+        let feelChecks = try modelContext.fetch(FetchDescriptor<FeelCheck>())
         let movements = try modelContext.fetch(FetchDescriptor<MovementEntry>())
         let meals = try modelContext.fetch(FetchDescriptor<MealEntry>())
 
-        for checkIn in checkIns {
-            modelContext.delete(checkIn)
+        for check in feelChecks {
+            modelContext.delete(check)
         }
         for movement in movements {
             modelContext.delete(movement)
@@ -140,12 +146,12 @@ class DataExporter {
         try modelContext.save()
     }
 
-    func getDataCounts() -> (checkIns: Int, movements: Int, meals: Int) {
+    func getDataCounts() -> (feelChecks: Int, movements: Int, meals: Int) {
         do {
-            let checkIns = try modelContext.fetchCount(FetchDescriptor<DailyCheckIn>())
+            let feelChecks = try modelContext.fetchCount(FetchDescriptor<FeelCheck>())
             let movements = try modelContext.fetchCount(FetchDescriptor<MovementEntry>())
             let meals = try modelContext.fetchCount(FetchDescriptor<MealEntry>())
-            return (checkIns, movements, meals)
+            return (feelChecks, movements, meals)
         } catch {
             return (0, 0, 0)
         }

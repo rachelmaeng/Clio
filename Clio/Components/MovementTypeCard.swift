@@ -117,7 +117,7 @@ struct MovementTypeCardWide: View {
             }
 
             MovementTypeCardWide(
-                type: .rest,
+                type: .restDay,
                 isSelected: false,
                 action: {}
             )

@@ -1,31 +1,31 @@
 import SwiftUI
 
 struct SensationChip: View {
-    let sensation: MealEntry.Sensation
+    let response: MealEntry.BodyResponse
     let isSelected: Bool
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            Text(sensation.rawValue)
+            Text(response.rawValue)
                 .font(.subheadline)
                 .fontWeight(isSelected ? .semibold : .medium)
                 .foregroundStyle(isSelected ? ClioTheme.background : ClioTheme.textMuted)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
                 .background(
-                    isSelected ? ClioTheme.mealColor : ClioTheme.surface
+                    isSelected ? ClioTheme.eatColor : ClioTheme.surface
                 )
                 .clipShape(Capsule())
                 .overlay(
                     Capsule()
                         .stroke(
-                            isSelected ? ClioTheme.mealColor : Color.white.opacity(0.05),
+                            isSelected ? ClioTheme.eatColor : Color.white.opacity(0.05),
                             lineWidth: 1
                         )
                 )
                 .shadow(
-                    color: isSelected ? ClioTheme.mealColor.opacity(0.4) : .clear,
+                    color: isSelected ? ClioTheme.eatColor.opacity(0.4) : .clear,
                     radius: 8, x: 0, y: 2
                 )
         }
@@ -35,26 +35,26 @@ struct SensationChip: View {
 }
 
 struct SensationChipGroup: View {
-    @Binding var selectedSensations: Set<MealEntry.Sensation>
+    @Binding var selectedResponses: Set<MealEntry.BodyResponse>
 
     var body: some View {
         FlowLayout(spacing: 8) {
-            ForEach(MealEntry.Sensation.allCases) { sensation in
+            ForEach(MealEntry.BodyResponse.allCases) { response in
                 SensationChip(
-                    sensation: sensation,
-                    isSelected: selectedSensations.contains(sensation)
+                    response: response,
+                    isSelected: selectedResponses.contains(response)
                 ) {
-                    if selectedSensations.contains(sensation) {
-                        selectedSensations.remove(sensation)
+                    if selectedResponses.contains(response) {
+                        selectedResponses.remove(response)
                     } else {
-                        selectedSensations.insert(sensation)
+                        selectedResponses.insert(response)
                     }
                 }
             }
 
             // Add custom button
             Button {
-                // Future: add custom sensation
+                // Future: add custom response
             } label: {
                 HStack(spacing: 4) {
                     Image(systemName: "plus")
@@ -124,7 +124,7 @@ struct FlowLayout: Layout {
         ClioTheme.background
             .ignoresSafeArea()
 
-        SensationChipGroup(selectedSensations: .constant([.grounded, .mindful]))
+        SensationChipGroup(selectedResponses: .constant([.energized, .satisfied]))
             .padding()
     }
 }

@@ -7,24 +7,29 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		L20000010000000000000001 /* home.json in Resources */ = {isa = PBXBuildFile; fileRef = L10000010000000000000001 /* home.json */; };
+		L20000020000000000000002 /* leaf.json in Resources */ = {isa = PBXBuildFile; fileRef = L10000020000000000000002 /* leaf.json */; };
+		L20000030000000000000003 /* walking.json in Resources */ = {isa = PBXBuildFile; fileRef = L10000030000000000000003 /* walking.json */; };
+		L20000040000000000000004 /* sparkle.json in Resources */ = {isa = PBXBuildFile; fileRef = L10000040000000000000004 /* sparkle.json */; };
+		L20000050000000000000005 /* gear.json in Resources */ = {isa = PBXBuildFile; fileRef = L10000050000000000000005 /* gear.json */; };
+		I20000010000000000000001 /* yoga-follicular.png in Resources */ = {isa = PBXBuildFile; fileRef = I10000010000000000000001 /* yoga-follicular.png */; };
+		I20000020000000000000002 /* contemplation-luteal.png in Resources */ = {isa = PBXBuildFile; fileRef = I10000020000000000000002 /* contemplation-luteal.png */; };
+		I20000030000000000000003 /* eating-healthy.png in Resources */ = {isa = PBXBuildFile; fileRef = I10000030000000000000003 /* eating-healthy.png */; };
+		I20000040000000000000004 /* hiking-ovulation.png in Resources */ = {isa = PBXBuildFile; fileRef = I10000040000000000000004 /* hiking-ovulation.png */; };
+		I20000050000000000000005 /* eating-menstrual.png in Resources */ = {isa = PBXBuildFile; fileRef = I10000050000000000000005 /* eating-menstrual.png */; };
 		A10000010000000000000001 /* ClioApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000001 /* ClioApp.swift */; };
 		A10000020000000000000002 /* ClioTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000020000000000000002 /* ClioTheme.swift */; };
 		A10000030000000000000003 /* UserSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000030000000000000003 /* UserSettings.swift */; };
-		A10000040000000000000004 /* DailyCheckIn.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000040000000000000004 /* DailyCheckIn.swift */; };
 		A10000050000000000000005 /* MovementEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000050000000000000005 /* MovementEntry.swift */; };
 		A10000060000000000000006 /* MealEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000060000000000000006 /* MealEntry.swift */; };
-		A10000070000000000000007 /* BodyStateCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000070000000000000007 /* BodyStateCard.swift */; };
+		A10000400000000000000040 /* SavedMeal.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000400000000000000040 /* SavedMeal.swift */; };
+		A10000410000000000000041 /* FeelCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000410000000000000041 /* FeelCheck.swift */; };
+		A10000420000000000000042 /* PersonalInsight.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000420000000000000042 /* PersonalInsight.swift */; };
 		A10000080000000000000008 /* MovementTypeCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000080000000000000008 /* MovementTypeCard.swift */; };
 		A10000090000000000000009 /* EnergySlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000090000000000000009 /* EnergySlider.swift */; };
 		A1000010000000000000000A /* SensationChip.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000010000000000000000A /* SensationChip.swift */; };
-		A1000011000000000000000B /* ReflectionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000011000000000000000B /* ReflectionCard.swift */; };
-		A1000012000000000000000C /* DailyCheckInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000012000000000000000C /* DailyCheckInView.swift */; };
-		A1000013000000000000000D /* MovementLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000013000000000000000D /* MovementLogView.swift */; };
-		A1000014000000000000000E /* NourishmentLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000014000000000000000E /* NourishmentLogView.swift */; };
 		A1000015000000000000000F /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000015000000000000000F /* HomeView.swift */; };
-		A10000160000000000000010 /* ReflectionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000160000000000000010 /* ReflectionsView.swift */; };
 		A10000170000000000000011 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000170000000000000011 /* SettingsView.swift */; };
-		A10000180000000000000012 /* ReflectionGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000180000000000000012 /* ReflectionGenerator.swift */; };
 		A10000190000000000000013 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000190000000000000013 /* Assets.xcassets */; };
 		A1000020000000000000001A /* HapticFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000020000000000000001A /* HapticFeedback.swift */; };
 		A1000021000000000000001B /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000021000000000000001B /* OnboardingView.swift */; };
@@ -32,29 +37,42 @@
 		A1000023000000000000001D /* KeyboardHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000023000000000000001D /* KeyboardHelpers.swift */; };
 		A1000024000000000000001E /* DataExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000024000000000000001E /* DataExporter.swift */; };
 		4CCFEC42AE83FE1D86B2F632 /* PhotoCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9093BBC846B60FC462DC22D8 /* PhotoCapture.swift */; };
-		21016319F25615854539DF4B /* NutritionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D779C84BB0C56B1494C449F1 /* NutritionService.swift */; };
-		E0E5DD4AA486A3431089A2B3 /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62C882F17919B863B20B94A4 /* LogView.swift */; };
+		A10000500000000000000050 /* AddMealView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000500000000000000050 /* AddMealView.swift */; };
+		A10000510000000000000051 /* AddMovementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000510000000000000051 /* AddMovementView.swift */; };
+		A10000520000000000000052 /* EatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000520000000000000052 /* EatView.swift */; };
+		A10000530000000000000053 /* FeelCheckView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000530000000000000053 /* FeelCheckView.swift */; };
+		A10000540000000000000054 /* InsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000540000000000000054 /* InsightsView.swift */; };
+		A10000550000000000000055 /* MoveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000550000000000000055 /* MoveView.swift */; };
+		Q10000010000000000000001 /* QuickDailyLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = Q20000010000000000000001 /* QuickDailyLogView.swift */; };
+		A10000560000000000000056 /* PhaseTipData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000560000000000000056 /* PhaseTipData.swift */; };
+		A10000570000000000000057 /* CorrelationEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000570000000000000057 /* CorrelationEngine.swift */; };
+		A10000580000000000000058 /* CyclePhaseEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000580000000000000058 /* CyclePhaseEngine.swift */; };
+		A10000590000000000000059 /* InsightGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000590000000000000059 /* InsightGenerator.swift */; };
+		P10000010000000000000001 /* PhaseHeroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = P20000010000000000000001 /* PhaseHeroView.swift */; };
+		F10000010000000000000001 /* CrimsonPro-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F20000010000000000000001 /* CrimsonPro-Regular.ttf */; };
+		F10000020000000000000002 /* CrimsonPro-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F20000020000000000000002 /* CrimsonPro-Medium.ttf */; };
+		F10000030000000000000003 /* CrimsonPro-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F20000030000000000000003 /* CrimsonPro-SemiBold.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		A20000010000000000000001 /* ClioApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClioApp.swift; sourceTree = "<group>"; };
 		A20000020000000000000002 /* ClioTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClioTheme.swift; sourceTree = "<group>"; };
 		A20000030000000000000003 /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
-		A20000040000000000000004 /* DailyCheckIn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyCheckIn.swift; sourceTree = "<group>"; };
 		A20000050000000000000005 /* MovementEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovementEntry.swift; sourceTree = "<group>"; };
 		A20000060000000000000006 /* MealEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealEntry.swift; sourceTree = "<group>"; };
-		A20000070000000000000007 /* BodyStateCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyStateCard.swift; sourceTree = "<group>"; };
+		L10000010000000000000001 /* home.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = home.json; sourceTree = "<group>"; };
+		L10000020000000000000002 /* leaf.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = leaf.json; sourceTree = "<group>"; };
+		L10000030000000000000003 /* walking.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = walking.json; sourceTree = "<group>"; };
+		L10000040000000000000004 /* sparkle.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = sparkle.json; sourceTree = "<group>"; };
+		L10000050000000000000005 /* gear.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = gear.json; sourceTree = "<group>"; };
+		A20000400000000000000040 /* SavedMeal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedMeal.swift; sourceTree = "<group>"; };
+		A20000410000000000000041 /* FeelCheck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeelCheck.swift; sourceTree = "<group>"; };
+		A20000420000000000000042 /* PersonalInsight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalInsight.swift; sourceTree = "<group>"; };
 		A20000080000000000000008 /* MovementTypeCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovementTypeCard.swift; sourceTree = "<group>"; };
 		A20000090000000000000009 /* EnergySlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnergySlider.swift; sourceTree = "<group>"; };
 		A2000010000000000000000A /* SensationChip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensationChip.swift; sourceTree = "<group>"; };
-		A2000011000000000000000B /* ReflectionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionCard.swift; sourceTree = "<group>"; };
-		A2000012000000000000000C /* DailyCheckInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyCheckInView.swift; sourceTree = "<group>"; };
-		A2000013000000000000000D /* MovementLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovementLogView.swift; sourceTree = "<group>"; };
-		A2000014000000000000000E /* NourishmentLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NourishmentLogView.swift; sourceTree = "<group>"; };
 		A2000015000000000000000F /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
-		A20000160000000000000010 /* ReflectionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionsView.swift; sourceTree = "<group>"; };
 		A20000170000000000000011 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		A20000180000000000000012 /* ReflectionGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionGenerator.swift; sourceTree = "<group>"; };
 		A20000190000000000000013 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A2000020000000000000001A /* HapticFeedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticFeedback.swift; sourceTree = "<group>"; };
 		A2000021000000000000001B /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
@@ -63,8 +81,26 @@
 		A2000024000000000000001E /* DataExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataExporter.swift; sourceTree = "<group>"; };
 		A3000001000000000000001A /* Clio.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Clio.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9093BBC846B60FC462DC22D8 /* PhotoCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoCapture.swift; sourceTree = "<group>"; };
-		D779C84BB0C56B1494C449F1 /* NutritionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionService.swift; sourceTree = "<group>"; };
-		62C882F17919B863B20B94A4 /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
+		A20000500000000000000050 /* AddMealView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddMealView.swift; sourceTree = "<group>"; };
+		A20000510000000000000051 /* AddMovementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddMovementView.swift; sourceTree = "<group>"; };
+		A20000520000000000000052 /* EatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EatView.swift; sourceTree = "<group>"; };
+		A20000530000000000000053 /* FeelCheckView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeelCheckView.swift; sourceTree = "<group>"; };
+		A20000540000000000000054 /* InsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsView.swift; sourceTree = "<group>"; };
+		A20000550000000000000055 /* MoveView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoveView.swift; sourceTree = "<group>"; };
+		Q20000010000000000000001 /* QuickDailyLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickDailyLogView.swift; sourceTree = "<group>"; };
+		A20000560000000000000056 /* PhaseTipData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhaseTipData.swift; sourceTree = "<group>"; };
+		A20000570000000000000057 /* CorrelationEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CorrelationEngine.swift; sourceTree = "<group>"; };
+		A20000580000000000000058 /* CyclePhaseEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CyclePhaseEngine.swift; sourceTree = "<group>"; };
+		A20000590000000000000059 /* InsightGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightGenerator.swift; sourceTree = "<group>"; };
+		I10000010000000000000001 /* yoga-follicular.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "yoga-follicular.png"; sourceTree = "<group>"; };
+		I10000020000000000000002 /* contemplation-luteal.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "contemplation-luteal.png"; sourceTree = "<group>"; };
+		I10000030000000000000003 /* eating-healthy.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "eating-healthy.png"; sourceTree = "<group>"; };
+		I10000040000000000000004 /* hiking-ovulation.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "hiking-ovulation.png"; sourceTree = "<group>"; };
+		I10000050000000000000005 /* eating-menstrual.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "eating-menstrual.png"; sourceTree = "<group>"; };
+		P20000010000000000000001 /* PhaseHeroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhaseHeroView.swift; sourceTree = "<group>"; };
+		F20000010000000000000001 /* CrimsonPro-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "CrimsonPro-Regular.ttf"; sourceTree = "<group>"; };
+		F20000020000000000000002 /* CrimsonPro-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "CrimsonPro-Medium.ttf"; sourceTree = "<group>"; };
+		F20000030000000000000003 /* CrimsonPro-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "CrimsonPro-SemiBold.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,6 +133,8 @@
 				A50000080000000000000023 /* Utilities */,
 				A20000190000000000000013 /* Assets.xcassets */,
 				571DC86F94E35E0BD1366C5D /* Services */,
+				A50000600000000000000060 /* Data */,
+				L50000010000000000000001 /* Resources */,
 			);
 			path = Clio;
 			sourceTree = "<group>";
@@ -121,9 +159,11 @@
 			isa = PBXGroup;
 			children = (
 				A20000030000000000000003 /* UserSettings.swift */,
-				A20000040000000000000004 /* DailyCheckIn.swift */,
 				A20000050000000000000005 /* MovementEntry.swift */,
 				A20000060000000000000006 /* MealEntry.swift */,
+				A20000400000000000000040 /* SavedMeal.swift */,
+				A20000410000000000000041 /* FeelCheck.swift */,
+				A20000420000000000000042 /* PersonalInsight.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -131,12 +171,11 @@
 		A50000060000000000000021 /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				A20000070000000000000007 /* BodyStateCard.swift */,
 				A20000080000000000000008 /* MovementTypeCard.swift */,
 				A20000090000000000000009 /* EnergySlider.swift */,
 				A2000010000000000000000A /* SensationChip.swift */,
-				A2000011000000000000000B /* ReflectionCard.swift */,
 				9093BBC846B60FC462DC22D8 /* PhotoCapture.swift */,
+				P20000010000000000000001 /* PhaseHeroView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -144,14 +183,16 @@
 		A50000070000000000000022 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				A2000012000000000000000C /* DailyCheckInView.swift */,
-				A2000013000000000000000D /* MovementLogView.swift */,
-				A2000014000000000000000E /* NourishmentLogView.swift */,
 				A2000015000000000000000F /* HomeView.swift */,
-				A20000160000000000000010 /* ReflectionsView.swift */,
 				A20000170000000000000011 /* SettingsView.swift */,
 				A2000021000000000000001B /* OnboardingView.swift */,
-				62C882F17919B863B20B94A4 /* LogView.swift */,
+				A20000500000000000000050 /* AddMealView.swift */,
+				A20000510000000000000051 /* AddMovementView.swift */,
+				A20000520000000000000052 /* EatView.swift */,
+				A20000530000000000000053 /* FeelCheckView.swift */,
+				A20000540000000000000054 /* InsightsView.swift */,
+				A20000550000000000000055 /* MoveView.swift */,
+				Q20000010000000000000001 /* QuickDailyLogView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -159,7 +200,6 @@
 		A50000080000000000000023 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
-				A20000180000000000000012 /* ReflectionGenerator.swift */,
 				A2000020000000000000001A /* HapticFeedback.swift */,
 				A2000022000000000000001C /* AnimationHelpers.swift */,
 				A2000023000000000000001D /* KeyboardHelpers.swift */,
@@ -171,9 +211,63 @@
 		571DC86F94E35E0BD1366C5D /* Services */ = {
 			isa = PBXGroup;
 			children = (
-				D779C84BB0C56B1494C449F1 /* NutritionService.swift */,
+				A20000570000000000000057 /* CorrelationEngine.swift */,
+				A20000580000000000000058 /* CyclePhaseEngine.swift */,
+				A20000590000000000000059 /* InsightGenerator.swift */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		A50000600000000000000060 /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				A20000560000000000000056 /* PhaseTipData.swift */,
+			);
+			path = Data;
+			sourceTree = "<group>";
+		};
+		L50000010000000000000001 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				L50000020000000000000002 /* Animations */,
+				F50000010000000000000001 /* Fonts */,
+				I50000010000000000000001 /* Illustrations */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		I50000010000000000000001 /* Illustrations */ = {
+			isa = PBXGroup;
+			children = (
+				I10000010000000000000001 /* yoga-follicular.png */,
+				I10000020000000000000002 /* contemplation-luteal.png */,
+				I10000030000000000000003 /* eating-healthy.png */,
+				I10000040000000000000004 /* hiking-ovulation.png */,
+				I10000050000000000000005 /* eating-menstrual.png */,
+			);
+			path = Illustrations;
+			sourceTree = "<group>";
+		};
+		L50000020000000000000002 /* Animations */ = {
+			isa = PBXGroup;
+			children = (
+				L10000010000000000000001 /* home.json */,
+				L10000020000000000000002 /* leaf.json */,
+				L10000030000000000000003 /* walking.json */,
+				L10000040000000000000004 /* sparkle.json */,
+				L10000050000000000000005 /* gear.json */,
+			);
+			path = Animations;
+			sourceTree = "<group>";
+		};
+		F50000010000000000000001 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				F20000010000000000000001 /* CrimsonPro-Regular.ttf */,
+				F20000020000000000000002 /* CrimsonPro-Medium.ttf */,
+				F20000030000000000000003 /* CrimsonPro-SemiBold.ttf */,
+			);
+			path = Fonts;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -192,6 +286,9 @@
 			dependencies = (
 			);
 			name = Clio;
+			packageProductDependencies = (
+				B1000001000000000000001A /* Lottie */,
+			);
 			productName = Clio;
 			productReference = A3000001000000000000001A /* Clio.app */;
 			productType = "com.apple.product-type.application";
@@ -220,6 +317,9 @@
 				Base,
 			);
 			mainGroup = A5000001000000000000001C;
+			packageReferences = (
+				B2000001000000000000001B /* XCRemoteSwiftPackageReference "lottie-ios" */,
+			);
 			productRefGroup = A5000003000000000000001E /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -235,6 +335,19 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000190000000000000013 /* Assets.xcassets in Resources */,
+				L20000010000000000000001 /* home.json in Resources */,
+				L20000020000000000000002 /* leaf.json in Resources */,
+				L20000030000000000000003 /* walking.json in Resources */,
+				L20000040000000000000004 /* sparkle.json in Resources */,
+				L20000050000000000000005 /* gear.json in Resources */,
+				I20000010000000000000001 /* yoga-follicular.png in Resources */,
+				I20000020000000000000002 /* contemplation-luteal.png in Resources */,
+				I20000030000000000000003 /* eating-healthy.png in Resources */,
+				I20000040000000000000004 /* hiking-ovulation.png in Resources */,
+				I20000050000000000000005 /* eating-menstrual.png in Resources */,
+				F10000010000000000000001 /* CrimsonPro-Regular.ttf in Resources */,
+				F10000020000000000000002 /* CrimsonPro-Medium.ttf in Resources */,
+				F10000030000000000000003 /* CrimsonPro-SemiBold.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -248,29 +361,34 @@
 				A10000010000000000000001 /* ClioApp.swift in Sources */,
 				A10000020000000000000002 /* ClioTheme.swift in Sources */,
 				A10000030000000000000003 /* UserSettings.swift in Sources */,
-				A10000040000000000000004 /* DailyCheckIn.swift in Sources */,
 				A10000050000000000000005 /* MovementEntry.swift in Sources */,
 				A10000060000000000000006 /* MealEntry.swift in Sources */,
-				A10000070000000000000007 /* BodyStateCard.swift in Sources */,
+				A10000400000000000000040 /* SavedMeal.swift in Sources */,
+				A10000410000000000000041 /* FeelCheck.swift in Sources */,
+				A10000420000000000000042 /* PersonalInsight.swift in Sources */,
 				A10000080000000000000008 /* MovementTypeCard.swift in Sources */,
 				A10000090000000000000009 /* EnergySlider.swift in Sources */,
 				A1000010000000000000000A /* SensationChip.swift in Sources */,
-				A1000011000000000000000B /* ReflectionCard.swift in Sources */,
-				A1000012000000000000000C /* DailyCheckInView.swift in Sources */,
-				A1000013000000000000000D /* MovementLogView.swift in Sources */,
-				A1000014000000000000000E /* NourishmentLogView.swift in Sources */,
 				A1000015000000000000000F /* HomeView.swift in Sources */,
-				A10000160000000000000010 /* ReflectionsView.swift in Sources */,
 				A10000170000000000000011 /* SettingsView.swift in Sources */,
-				A10000180000000000000012 /* ReflectionGenerator.swift in Sources */,
 				A1000020000000000000001A /* HapticFeedback.swift in Sources */,
 				A1000021000000000000001B /* OnboardingView.swift in Sources */,
 				A1000022000000000000001C /* AnimationHelpers.swift in Sources */,
 				A1000023000000000000001D /* KeyboardHelpers.swift in Sources */,
 				A1000024000000000000001E /* DataExporter.swift in Sources */,
-				E0E5DD4AA486A3431089A2B3 /* LogView.swift in Sources */,
 				4CCFEC42AE83FE1D86B2F632 /* PhotoCapture.swift in Sources */,
-				21016319F25615854539DF4B /* NutritionService.swift in Sources */,
+				A10000500000000000000050 /* AddMealView.swift in Sources */,
+				A10000510000000000000051 /* AddMovementView.swift in Sources */,
+				A10000520000000000000052 /* EatView.swift in Sources */,
+				A10000530000000000000053 /* FeelCheckView.swift in Sources */,
+				A10000540000000000000054 /* InsightsView.swift in Sources */,
+				A10000550000000000000055 /* MoveView.swift in Sources */,
+				Q10000010000000000000001 /* QuickDailyLogView.swift in Sources */,
+				A10000560000000000000056 /* PhaseTipData.swift in Sources */,
+				A10000570000000000000057 /* CorrelationEngine.swift in Sources */,
+				A10000580000000000000058 /* CyclePhaseEngine.swift in Sources */,
+				A10000590000000000000059 /* InsightGenerator.swift in Sources */,
+				P10000010000000000000001 /* PhaseHeroView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -476,6 +594,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B2000001000000000000001B /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.4.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B1000001000000000000001A /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B2000001000000000000001B /* XCRemoteSwiftPackageReference "lottie-ios" */;
+			productName = Lottie;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = AA000001000000000000002E /* Project object */;
 }

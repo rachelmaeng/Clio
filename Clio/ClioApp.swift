@@ -7,17 +7,22 @@ struct ClioApp: App {
 
     var body: some Scene {
         WindowGroup {
-            if hasCompletedOnboarding {
-                MainTabView()
-            } else {
-                OnboardingView(hasCompletedOnboarding: $hasCompletedOnboarding)
+            Group {
+                if hasCompletedOnboarding {
+                    MainTabView()
+                } else {
+                    OnboardingView(hasCompletedOnboarding: $hasCompletedOnboarding)
+                }
             }
+            .preferredColorScheme(.light)
         }
         .modelContainer(for: [
             UserSettings.self,
-            DailyCheckIn.self,
             MovementEntry.self,
-            MealEntry.self
+            MealEntry.self,
+            FeelCheck.self,
+            PersonalInsight.self,
+            SavedMeal.self
         ])
     }
 }
@@ -27,66 +32,115 @@ struct MainTabView: View {
 
     enum Tab: String, CaseIterable {
         case home = "Home"
-        case log = "Log"
-        case reflections = "Reflect"
+        case eat = "Eat"
+        case move = "Move"
+        case insights = "Insights"
         case settings = "Settings"
 
         var icon: String {
             switch self {
+            case .home: return "house"
+            case .eat: return "leaf"
+            case .move: return "figure.walk"
+            case .insights: return "sparkles"
+            case .settings: return "gearshape"
+            }
+        }
+
+        var selectedIcon: String {
+            switch self {
             case .home: return "house.fill"
-            case .log: return "plus.circle.fill"
-            case .reflections: return "chart.line.uptrend.xyaxis"
+            case .eat: return "leaf.fill"
+            case .move: return "figure.walk"
+            case .insights: return "sparkles"
             case .settings: return "gearshape.fill"
             }
         }
 
         var color: Color {
             switch self {
-            case .home: return ClioTheme.primary
-            case .log: return ClioTheme.primary
-            case .reflections: return ClioTheme.primary
-            case .settings: return ClioTheme.primary
+            case .home: return ClioTheme.primary       // Sage green
+            case .eat: return ClioTheme.eatColor       // Terracotta
+            case .move: return ClioTheme.moveColor     // Teal
+            case .insights: return ClioTheme.insightColor // Blue
+            case .settings: return ClioTheme.textMuted
             }
         }
     }
 
     var body: some View {
-        ZStack {
-            ClioTheme.background
-                .ignoresSafeArea()
-
-            TabView(selection: $selectedTab) {
-                HomeView()
-                    .tag(Tab.home)
-                    .tabItem {
-                        Label(Tab.home.rawValue, systemImage: Tab.home.icon)
-                    }
-
-                LogView()
-                    .tag(Tab.log)
-                    .tabItem {
-                        Label(Tab.log.rawValue, systemImage: Tab.log.icon)
-                    }
-
-                ReflectionsView()
-                    .tag(Tab.reflections)
-                    .tabItem {
-                        Label(Tab.reflections.rawValue, systemImage: Tab.reflections.icon)
-                    }
-
-                SettingsView()
-                    .tag(Tab.settings)
-                    .tabItem {
-                        Label(Tab.settings.rawValue, systemImage: Tab.settings.icon)
-                    }
+        ZStack(alignment: .bottom) {
+            // Content
+            Group {
+                switch selectedTab {
+                case .home: HomeView()
+                case .eat: EatView()
+                case .move: MoveView()
+                case .insights: InsightsView()
+                case .settings: SettingsView()
+                }
             }
-            .tint(ClioTheme.primary)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            // Custom Tab Bar
+            AnimatedTabBar(selectedTab: $selectedTab)
         }
-        .preferredColorScheme(.dark)
+        .ignoresSafeArea(.keyboard)
+        .preferredColorScheme(.light)
+    }
+}
+
+// MARK: - Tab Bar
+struct AnimatedTabBar: View {
+    @Binding var selectedTab: MainTabView.Tab
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(MainTabView.Tab.allCases, id: \.self) { tab in
+                tabButton(for: tab)
+            }
+        }
+        .padding(.top, 12)
+        .padding(.bottom, 28)
+        .background(
+            Rectangle()
+                .fill(ClioTheme.surface)
+                .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: -4)
+                .ignoresSafeArea()
+        )
+    }
+
+    private func tabButton(for tab: MainTabView.Tab) -> some View {
+        Button {
+            if selectedTab != tab {
+                selectedTab = tab
+                let impactMed = UIImpactFeedbackGenerator(style: .light)
+                impactMed.impactOccurred()
+            }
+        } label: {
+            VStack(spacing: 4) {
+                Image(systemName: selectedTab == tab ? tab.selectedIcon : tab.icon)
+                    .font(.system(size: 22))
+                    .frame(height: 24)
+
+                Text(tab.rawValue)
+                    .font(.caption2)
+            }
+            .foregroundStyle(selectedTab == tab ? tab.color : ClioTheme.textMuted)
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.plain)
     }
 }
 
 #Preview {
     MainTabView()
-        .modelContainer(for: [UserSettings.self, DailyCheckIn.self, MovementEntry.self, MealEntry.self], inMemory: true)
+        .modelContainer(for: [
+            UserSettings.self,
+            MovementEntry.self,
+            MealEntry.self,
+            FeelCheck.self,
+            PersonalInsight.self,
+            SavedMeal.self
+        ], inMemory: true)
 }

@@ -48,7 +48,7 @@ struct PhotoCapture: View {
                         PhotoCaptureButton(
                             icon: "photo.on.rectangle",
                             title: "Gallery",
-                            color: ClioTheme.mealColor
+                            color: ClioTheme.eatColor
                         )
                     }
                     .buttonStyle(.plain)
@@ -59,7 +59,7 @@ struct PhotoCapture: View {
                         PhotoCaptureButton(
                             icon: "camera.fill",
                             title: "Camera",
-                            color: ClioTheme.mealColor
+                            color: ClioTheme.eatColor
                         )
                     }
                     .buttonStyle(.plain)

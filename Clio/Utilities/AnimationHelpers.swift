@@ -55,7 +55,7 @@ struct AnimatedCheckmark: View {
     let color: Color
     let size: CGFloat
 
-    init(color: Color = ClioTheme.sage, size: CGFloat = 60) {
+    init(color: Color = ClioTheme.primary, size: CGFloat = 60) {
         self.color = color
         self.size = size
     }
@@ -108,7 +108,7 @@ struct CelebrationParticles: View {
     @State private var animate = false
     let colors: [Color]
 
-    init(colors: [Color] = [ClioTheme.primary, ClioTheme.rose, ClioTheme.sage]) {
+    init(colors: [Color] = [ClioTheme.primary, ClioTheme.terracotta, ClioTheme.success]) {
         self.colors = colors
     }
 

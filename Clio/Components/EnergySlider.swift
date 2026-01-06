@@ -28,41 +28,8 @@ struct EnergySlider: View {
             }
 
             VStack(spacing: 12) {
-                // Custom slider track
-                GeometryReader { geometry in
-                    ZStack(alignment: .leading) {
-                        // Background track
-                        Capsule()
-                            .fill(ClioTheme.surfaceHighlight)
-                            .frame(height: 6)
-
-                        // Filled track with gradient
-                        Capsule()
-                            .fill(
-                                LinearGradient(
-                                    colors: [ClioTheme.surfaceHighlight, ClioTheme.primary],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .frame(width: geometry.size.width * (value / 100), height: 6)
-
-                        // Thumb
-                        Circle()
-                            .fill(.white)
-                            .frame(width: 24, height: 24)
-                            .shadow(color: ClioTheme.primary.opacity(0.5), radius: 8, x: 0, y: 2)
-                            .offset(x: (geometry.size.width - 24) * (value / 100))
-                            .gesture(
-                                DragGesture(minimumDistance: 0)
-                                    .onChanged { gesture in
-                                        let newValue = gesture.location.x / geometry.size.width * 100
-                                        value = min(max(newValue, 0), 100)
-                                    }
-                            )
-                    }
-                }
-                .frame(height: 24)
+                Slider(value: $value, in: range)
+                    .tint(ClioTheme.primary)
 
                 // Labels
                 HStack {
