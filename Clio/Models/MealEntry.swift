@@ -28,6 +28,9 @@ final class MealEntry {
     var specificFoodReaction: String?  // If they know which food caused it
     var bodyResponseNotes: String?
 
+    // MARK: - Feel After (Simple post-meal feeling)
+    var feelAfter: String?  // "satisfied", "nourished", "energized", "sluggish", "bloated", "neutral"
+
     // MARK: - Cycle Context
     var cyclePhase: String?
     var cycleDay: Int?
@@ -55,6 +58,7 @@ final class MealEntry {
         bodyResponses: [String] = [],
         specificFoodReaction: String? = nil,
         bodyResponseNotes: String? = nil,
+        feelAfter: String? = nil,
         cyclePhase: String? = nil,
         cycleDay: Int? = nil,
         fromTipId: String? = nil,
@@ -77,6 +81,7 @@ final class MealEntry {
         self.bodyResponses = bodyResponses
         self.specificFoodReaction = specificFoodReaction
         self.bodyResponseNotes = bodyResponseNotes
+        self.feelAfter = feelAfter
         self.cyclePhase = cyclePhase
         self.cycleDay = cycleDay
         self.fromTipId = fromTipId
@@ -135,6 +140,36 @@ final class MealEntry {
             switch self {
             case .energized, .satisfied, .light, .neutral: return true
             case .bloated, .gassy, .nauseous, .sluggish, .crampy: return false
+            }
+        }
+    }
+
+    // MARK: - Meal Feel After (Simple post-meal feeling)
+    enum MealFeelAfter: String, CaseIterable, Identifiable {
+        case satisfied = "Satisfied"
+        case nourished = "Nourished"
+        case energized = "Energized"
+        case sluggish = "Sluggish"
+        case bloated = "Bloated"
+        case neutral = "Neutral"
+
+        var id: String { rawValue }
+
+        var icon: String {
+            switch self {
+            case .satisfied: return "checkmark.circle"
+            case .nourished: return "leaf"
+            case .energized: return "bolt"
+            case .sluggish: return "tortoise"
+            case .bloated: return "circle.circle"
+            case .neutral: return "minus"
+            }
+        }
+
+        var isPositive: Bool {
+            switch self {
+            case .satisfied, .nourished, .energized, .neutral: return true
+            case .sluggish, .bloated: return false
             }
         }
     }

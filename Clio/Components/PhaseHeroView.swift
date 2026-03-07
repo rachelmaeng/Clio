@@ -19,13 +19,9 @@ struct PhaseHeroView: View {
     var height: CGFloat = 200
     var showPhaseLabel: Bool = true
 
+    // Static image for Home - will add phase-specific images later
     private var imageName: String {
-        switch phase {
-        case .menstrual: return "eating-menstrual"
-        case .follicular: return "yoga-follicular"
-        case .ovulation: return "hiking-ovulation"
-        case .luteal: return "contemplation-luteal"
-        }
+        return "eating-menstrual"
     }
 
     private var phaseMessage: String {
@@ -38,46 +34,43 @@ struct PhaseHeroView: View {
     }
 
     var body: some View {
-        ZStack(alignment: .bottomLeading) {
-            // Full illustration - use alignment to show less sky
-            loadBundleImage(imageName)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .overlay(
-                    GrainTexture(opacity: 0.05)
-                        .blendMode(.overlay)
+        GeometryReader { geo in
+            let safeAreaTop = geo.safeAreaInsets.top
+
+            ZStack(alignment: .bottomLeading) {
+                // Full illustration - aligned to BOTTOM to show person
+                loadBundleImage(imageName)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: geo.size.width, height: height + safeAreaTop, alignment: .bottom)
+                    .clipped()
+                    .overlay(
+                        GrainTexture(opacity: 0.05)
+                            .blendMode(.overlay)
+                    )
+
+                // Bottom fade into background
+                LinearGradient(
+                    colors: [
+                        ClioTheme.background,
+                        ClioTheme.background.opacity(0.9),
+                        ClioTheme.background.opacity(0.0)
+                    ],
+                    startPoint: .bottom,
+                    endPoint: .top
                 )
-
-            // Bottom fade into background (matches Eat hero style)
-            LinearGradient(
-                colors: [
-                    ClioTheme.background,
-                    ClioTheme.background.opacity(0.9),
-                    ClioTheme.background.opacity(0.0)
-                ],
-                startPoint: .bottom,
-                endPoint: .top
-            )
-            .frame(height: 120)
-            .frame(maxHeight: .infinity, alignment: .bottom)
-
-            // Phase label - overlaid on image (consistent with other pages)
-            if showPhaseLabel {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(phaseMessage)
-                        .font(ClioTheme.headingFont(22))
-                        .foregroundStyle(ClioTheme.text)
-
-                    Text(phase.description)
-                        .font(ClioTheme.captionFont(13))
-                        .foregroundStyle(ClioTheme.textMuted)
-                }
-                .padding(.horizontal, ClioTheme.spacing)
-                .padding(.bottom, ClioTheme.spacingSmall)
+                .frame(height: 60)
+                .frame(maxHeight: .infinity, alignment: .bottom)
             }
+            .frame(width: geo.size.width, height: height + safeAreaTop)
+            .offset(y: -safeAreaTop) // Pull up into safe area
         }
+        .frame(height: height)
+        .frame(maxWidth: .infinity)
+        .clipped()
     }
 }
+
 
 /// A compact phase indicator with illustration thumbnail
 struct PhaseIndicatorCompact: View {
@@ -160,6 +153,10 @@ struct CategoryHeroView: View {
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
+            // Solid background to prevent any flash
+            ClioTheme.background
+                .frame(height: height)
+
             // Full illustration - edge to edge, rounded top corners
             loadBundleImage(category.imageName)
                 .resizable()

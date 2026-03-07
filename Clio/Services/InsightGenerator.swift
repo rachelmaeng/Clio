@@ -2,7 +2,28 @@ import Foundation
 import SwiftData
 
 /// Service that generates and manages personal insights
+/// Regeneration rules:
+/// - On app open: regenerate if data changed since last run
+/// - On new log entry: queue regeneration (debounced)
+/// - Manually: user can trigger "refresh insights"
+/// - Cache limit: keep max 5 active insights, archive viewed ones
 class InsightGenerator {
+
+    // MARK: - Configuration
+
+    /// Maximum active insights to show
+    static let maxActiveInsights = 5
+
+    /// Debounce interval for regeneration (seconds)
+    static let regenerationDebounce: TimeInterval = 30
+
+    /// Storage key for last generation timestamp
+    private static let lastGenerationKey = "insight_last_generation_date"
+
+    /// Storage key for data hash (to detect changes)
+    private static let dataHashKey = "insight_data_hash"
+
+    // MARK: - Main Generation
 
     /// Run insight generation and save new insights to the model context
     static func generateInsights(modelContext: ModelContext) {
@@ -19,6 +40,11 @@ class InsightGenerator {
             return
         }
 
+        // Clear all non-dismissed insights so we get a fresh, deduplicated set
+        for insight in existingInsights where !insight.hasBeenDismissed {
+            modelContext.delete(insight)
+        }
+
         // Run correlation analysis
         let patterns = CorrelationEngine.analyzePatterns(
             meals: meals,
@@ -33,52 +59,201 @@ class InsightGenerator {
             modelContext.insert(insight)
         }
 
+        // Update last generation timestamp and data hash
+        UserDefaults.standard.set(Date(), forKey: lastGenerationKey)
+        let newHash = computeDataHash(meals: meals, movements: movements, feelChecks: feelChecks)
+        UserDefaults.standard.set(newHash, forKey: dataHashKey)
+
         // Save context
         try? modelContext.save()
     }
 
     /// Check if we should run insight generation
-    /// Returns true if enough time has passed since last generation or enough new data exists
+    /// Returns true if:
+    /// - Never run before AND minimum data exists
+    /// - Data has changed since last generation
+    /// - Enough time has passed with new data
     static func shouldGenerateInsights(
-        lastGenerationDate: Date?,
-        newDataCount: Int
+        modelContext: ModelContext
     ) -> Bool {
-        // Generate if never run before
-        guard let lastDate = lastGenerationDate else {
-            return newDataCount >= 5  // Need minimum data
+        // Fetch current data counts
+        let mealDescriptor = FetchDescriptor<MealEntry>()
+        let movementDescriptor = FetchDescriptor<MovementEntry>()
+        let feelCheckDescriptor = FetchDescriptor<FeelCheck>()
+
+        guard let meals = try? modelContext.fetch(mealDescriptor),
+              let movements = try? modelContext.fetch(movementDescriptor),
+              let feelChecks = try? modelContext.fetch(feelCheckDescriptor) else {
+            return false
         }
 
-        let hoursSinceLastGeneration = Date().timeIntervalSince(lastDate) / 3600
+        // Check minimum data thresholds
+        let hasMinimumData = feelChecks.count >= CorrelationEngine.minCheckIns &&
+            (meals.count >= CorrelationEngine.minEntries || movements.count >= CorrelationEngine.minEntries)
 
-        // Run at least every 24 hours if there's new data
-        if hoursSinceLastGeneration >= 24 && newDataCount >= 1 {
-            return true
+        guard hasMinimumData else { return false }
+
+        // Check if never run before
+        guard let lastGeneration = UserDefaults.standard.object(forKey: lastGenerationKey) as? Date else {
+            return true  // First time generation
         }
 
-        // Run immediately if lots of new data
-        if newDataCount >= 10 {
+        // Check if data has changed
+        let currentHash = computeDataHash(meals: meals, movements: movements, feelChecks: feelChecks)
+        let storedHash = UserDefaults.standard.string(forKey: dataHashKey) ?? ""
+
+        if currentHash != storedHash {
+            return true  // Data changed
+        }
+
+        // Check time since last generation (regenerate if > 24 hours)
+        let hoursSinceLastGeneration = Date().timeIntervalSince(lastGeneration) / 3600
+        if hoursSinceLastGeneration >= 24 {
             return true
         }
 
         return false
     }
 
+    /// Force regeneration (user-triggered refresh)
+    static func forceRegenerate(modelContext: ModelContext) {
+        // Clear the stored hash to force regeneration
+        UserDefaults.standard.removeObject(forKey: dataHashKey)
+        generateInsights(modelContext: modelContext)
+    }
+
+    // MARK: - Insight Management
+
+    /// Enforce the maximum number of active (non-dismissed, non-viewed) insights
+    private static func enforceInsightLimit(
+        modelContext: ModelContext,
+        existingInsights: [PersonalInsight]
+    ) {
+        // Get active insights (not dismissed, not viewed too long ago)
+        let activeInsights = existingInsights
+            .filter { !$0.hasBeenDismissed }
+            .sorted { $0.createdAt > $1.createdAt }
+
+        // If over limit, archive older ones by marking as viewed
+        if activeInsights.count > maxActiveInsights {
+            let toArchive = activeInsights.dropFirst(maxActiveInsights)
+            for insight in toArchive {
+                if !insight.hasBeenViewed {
+                    insight.hasBeenViewed = true
+                    insight.isNew = false
+                }
+            }
+        }
+    }
+
+    /// Dismiss an insight (won't be regenerated)
+    static func dismissInsight(_ insight: PersonalInsight, modelContext: ModelContext) {
+        insight.dismiss()
+        try? modelContext.save()
+    }
+
+    /// Mark insight as viewed
+    static func markAsViewed(_ insight: PersonalInsight, modelContext: ModelContext) {
+        insight.markAsViewed()
+        try? modelContext.save()
+    }
+
+    // MARK: - Data Hash
+
+    /// Compute a hash of the current data state to detect changes
+    private static func computeDataHash(
+        meals: [MealEntry],
+        movements: [MovementEntry],
+        feelChecks: [FeelCheck]
+    ) -> String {
+        // Simple hash based on counts and most recent timestamps
+        let mealHash = "\(meals.count)_\(meals.first?.updatedAt.timeIntervalSince1970 ?? 0)"
+        let movementHash = "\(movements.count)_\(movements.first?.updatedAt.timeIntervalSince1970 ?? 0)"
+        let checkHash = "\(feelChecks.count)_\(feelChecks.first?.dateTime.timeIntervalSince1970 ?? 0)"
+
+        return "\(mealHash)|\(movementHash)|\(checkHash)"
+    }
+
+    // MARK: - Insight Grouping
+
+    /// Group insights by their display category for the UI
+    static func groupInsightsForDisplay(_ insights: [PersonalInsight]) -> [InsightGroup] {
+        var groups: [String: [PersonalInsight]] = [:]
+
+        // Filter to non-dismissed insights
+        let activeInsights = insights.filter { !$0.hasBeenDismissed }
+
+        for insight in activeInsights {
+            let groupTitle: String
+            if let type = PersonalInsight.InsightType(rawValue: insight.insightType) {
+                groupTitle = type.groupTitle
+            } else {
+                groupTitle = "For you"
+            }
+
+            groups[groupTitle, default: []].append(insight)
+        }
+
+        // Convert to array and sort
+        var result: [InsightGroup] = []
+
+        // Define group order
+        let orderedGroupNames = ["This cycle", "Over time", "Cycle patterns", "For you"]
+
+        for groupName in orderedGroupNames {
+            if let insights = groups[groupName], !insights.isEmpty {
+                let sortedInsights = insights.sorted { $0.confidenceScore > $1.confidenceScore }
+                result.append(InsightGroup(title: groupName, insights: sortedInsights))
+            }
+        }
+
+        return result
+    }
+
     /// Get insight summaries for display
     static func getInsightSummary(insights: [PersonalInsight]) -> InsightSummary {
-        let foodInsights = insights.filter { $0.category == "food" }
-        let movementInsights = insights.filter { $0.category == "movement" }
-        let positiveCount = insights.filter { $0.isPositive }.count
-        let newCount = insights.filter { $0.isNew }.count
+        let activeInsights = insights.filter { !$0.hasBeenDismissed }
+        let foodInsights = activeInsights.filter { $0.category == "food" }
+        let movementInsights = activeInsights.filter { $0.category == "movement" }
+        let positiveCount = activeInsights.filter { $0.isPositive }.count
+        let newCount = activeInsights.filter { $0.isNew }.count
 
         return InsightSummary(
-            totalInsights: insights.count,
+            totalInsights: activeInsights.count,
             foodInsights: foodInsights.count,
             movementInsights: movementInsights.count,
             positivePatterns: positiveCount,
             newInsights: newCount,
-            topPositive: foodInsights.filter { $0.isPositive }.first ?? movementInsights.filter { $0.isPositive }.first,
-            topNegative: foodInsights.filter { !$0.isPositive }.first ?? movementInsights.filter { !$0.isPositive }.first
+            topPositive: activeInsights.filter { $0.isPositive }.first,
+            topNegative: activeInsights.filter { !$0.isPositive }.first
         )
+    }
+
+    /// Get insights relevant to current phase
+    static func getInsightsForPhase(_ phase: CyclePhase, from insights: [PersonalInsight]) -> [PersonalInsight] {
+        insights.filter { !$0.hasBeenDismissed && ($0.cyclePhase == phase.rawValue || $0.cyclePhase == nil) }
+            .sorted { $0.confidenceScore > $1.confidenceScore }
+    }
+}
+
+// MARK: - Insight Group
+
+struct InsightGroup: Identifiable {
+    let id = UUID()
+    let title: String
+    let insights: [PersonalInsight]
+
+    var icon: String {
+        switch title {
+        case "This cycle":
+            return "sparkles"
+        case "Over time":
+            return "chart.line.uptrend.xyaxis"
+        case "Cycle patterns":
+            return "moon.stars"
+        default:
+            return "lightbulb"
+        }
     }
 }
 
@@ -113,86 +288,6 @@ struct InsightSummary {
         }
 
         return parts.joined(separator: " and ") + " discovered"
-    }
-}
-
-// MARK: - Insight Categories
-
-extension InsightGenerator {
-
-    /// Group insights by category for display
-    static func groupInsightsByCategory(_ insights: [PersonalInsight]) -> [String: [PersonalInsight]] {
-        var grouped: [String: [PersonalInsight]] = [:]
-
-        for insight in insights {
-            let category = insight.category
-            grouped[category, default: []].append(insight)
-        }
-
-        return grouped
-    }
-
-    /// Group insights by phase for display
-    static func groupInsightsByPhase(_ insights: [PersonalInsight]) -> [CyclePhase: [PersonalInsight]] {
-        var grouped: [CyclePhase: [PersonalInsight]] = [:]
-
-        for insight in insights {
-            if let phaseString = insight.cyclePhase,
-               let phase = CyclePhase(rawValue: phaseString) {
-                grouped[phase, default: []].append(insight)
-            }
-        }
-
-        return grouped
-    }
-
-    /// Get insights relevant to current phase
-    static func getInsightsForPhase(_ phase: CyclePhase, from insights: [PersonalInsight]) -> [PersonalInsight] {
-        insights.filter { $0.cyclePhase == phase.rawValue || $0.cyclePhase == nil }
-            .sorted { $0.confidenceScore > $1.confidenceScore }
-    }
-
-    /// Get actionable suggestions for today
-    static func getTodaySuggestions(
-        phase: CyclePhase,
-        insights: [PersonalInsight],
-        recentMeals: [MealEntry],
-        recentMovements: [MovementEntry]
-    ) -> [TodaySuggestion] {
-        var suggestions: [TodaySuggestion] = []
-
-        // Get positive patterns for current phase
-        let relevantInsights = getInsightsForPhase(phase, from: insights)
-            .filter { $0.isPositive && !$0.hasBeenDismissed }
-            .prefix(5)
-
-        // Foods to include
-        let recentFoods = Set(recentMeals.flatMap { $0.foodItems.map { $0.lowercased() } })
-        let foodSuggestions = relevantInsights
-            .filter { $0.category == "food" && !recentFoods.contains($0.trigger.lowercased()) }
-            .map { TodaySuggestion(
-                type: .food,
-                title: "Try \($0.trigger)",
-                reason: $0.title,
-                confidence: $0.confidenceScore
-            )}
-
-        suggestions.append(contentsOf: foodSuggestions)
-
-        // Movements to try
-        let recentMoveTypes = Set(recentMovements.map { $0.type.lowercased() })
-        let movementSuggestions = relevantInsights
-            .filter { $0.category == "movement" && !recentMoveTypes.contains($0.trigger.lowercased()) }
-            .map { TodaySuggestion(
-                type: .movement,
-                title: "Try \($0.trigger)",
-                reason: $0.title,
-                confidence: $0.confidenceScore
-            )}
-
-        suggestions.append(contentsOf: movementSuggestions)
-
-        return Array(suggestions.prefix(3))
     }
 }
 

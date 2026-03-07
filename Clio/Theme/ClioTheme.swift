@@ -9,62 +9,62 @@ enum ClioTheme {
     static let spacingSmall: CGFloat = 12
     static let spacingLarge: CGFloat = 32
 
-    // MARK: - Core Colors (Muted, Painterly Palette)
-    static let background = Color(hex: "F4EBE0")        // Warm parchment cream
-    static let surface = Color(hex: "FAF7F2")           // Soft warm white
-    static let surfaceHighlight = Color(hex: "EFE8DE")  // Warm sand highlight
-    static let text = Color(hex: "3D4A45")              // Soft forest (not harsh black)
-    static let textMuted = Color(hex: "8A9590")         // Warm gray-sage
-    static let textLight = Color(hex: "B0B8B4")         // Whisper gray
+    // MARK: - Core Colors (Warm Earth Tone Palette)
+    static let background = Color(hex: "FAF8F5")        // Warm off-white/cream
+    static let surface = Color(hex: "FFFFFF")            // Pure white for cards
+    static let surfaceHighlight = Color(hex: "F3EFE9")   // Warm sand highlight
+    static let text = Color(hex: "3D3532")               // Warm dark brown
+    static let textMuted = Color(hex: "7D756F")          // Medium warm gray
+    static let textLight = Color(hex: "A89E96")          // Light warm gray
 
-    // MARK: - Primary (Muted Sage - Less Saturated)
-    static let primary = Color(hex: "6B9B7A")           // Softer, dustier sage
-    static let primaryMuted = Color(hex: "9BB5A5")      // Desaturated sage for buttons
-    static let primaryDark = Color(hex: "5A8568")       // Pressed state
+    // MARK: - Primary (Terracotta)
+    static let primary = Color(hex: "C4846C")            // Terracotta/rust
+    static let primaryMuted = Color(hex: "D4A090")       // Softer terracotta for buttons
+    static let primaryDark = Color(hex: "B87351")        // Pressed state
 
-    // MARK: - Accent Palette (Pulled from Illustrations - Muted)
-    static let sage = Color(hex: "6B9B7A")              // Muted sage (primary)
-    static let cream = Color(hex: "F4EBE0")             // Warm cream
-    static let terracotta = Color(hex: "D4A090")        // Muted coral (less saturated)
-    static let blush = Color(hex: "E8C8BC")             // Dusty blush
-    static let sand = Color(hex: "E0D4C4")              // Warm sand
-    static let linen = Color(hex: "F8F4EE")             // Soft linen
-    static let honey = Color(hex: "D8C080")             // Muted golden (less yellow)
-    static let rose = Color(hex: "C89898")              // Dusty rose
-    static let cerulean = Color(hex: "7A9EB0")          // Muted blue
-    static let teal = Color(hex: "4A7070")              // Soft teal
+    // MARK: - Accent Palette (Earth Tones)
+    static let sage = Color(hex: "8A9A7D")               // Sage green (secondary accent)
+    static let cream = Color(hex: "FAF8F5")              // Warm cream (matches background)
+    static let terracotta = Color(hex: "C4846C")         // Terracotta/rust (primary accent)
+    static let blush = Color(hex: "E0C4B8")              // Warm dusty blush
+    static let sand = Color(hex: "E8E0D6")               // Warm sand
+    static let linen = Color(hex: "FBF9F6")              // Warm near-white
+    static let honey = Color(hex: "C9A962")              // Dusty gold
+    static let rose = Color(hex: "B8939A")               // Muted mauve
+    static let cerulean = Color(hex: "8A9A7D")           // Replaced with sage for harmony
+    static let teal = Color(hex: "7D8B75")               // Deeper sage green
 
     // MARK: - Semantic Colors
-    static let accent = sage
-    static let success = Color(hex: "7A9A80")           // Muted green
+    static let accent = terracotta
+    static let success = Color(hex: "8A9A7D")            // Sage green
     static let neutral = textMuted
-    static let warning = Color(hex: "C8A080")           // Muted amber
+    static let warning = Color(hex: "C9A962")            // Dusty gold
 
     // MARK: - Category Colors (Distinct for each section)
-    static let eatColor = terracotta    // Warm coral-brown
-    static let moveColor = teal         // Cool teal (distinct from primary sage)
-    static let feelColor = blush        // Soft pink
-    static let insightColor = cerulean  // Muted blue
-    static let cycleColor = rose        // Dusty rose
+    static let eatColor = Color(hex: "8A9A7D")   // Sage green for food/nutrition
+    static let moveColor = Color(hex: "7D8B75")  // Deeper sage for movement
+    static let feelColor = Color(hex: "E0C4B8")  // Warm blush for feelings
+    static let insightColor = Color(hex: "C4846C") // Terracotta for insights
+    static let cycleColor = Color(hex: "B8939A")  // Muted mauve for cycle
 
-    // MARK: - Cycle Phase Colors (Muted versions)
-    static let menstrualPhase = Color(hex: "D4A090")    // Muted coral
-    static let follicularPhase = Color(hex: "6B9B7A")   // Muted sage
-    static let ovulationPhase = Color(hex: "D8C080")    // Muted gold
-    static let lutealPhase = Color(hex: "4A7070")       // Muted teal
+    // MARK: - Cycle Phase Colors (Earth Tone Variants)
+    static let menstrualPhase = Color(hex: "E8998D")     // Coral
+    static let follicularPhase = Color(hex: "6B7F59")    // Olive green
+    static let ovulationPhase = Color(hex: "C9A962")     // Dusty gold
+    static let lutealPhase = Color(hex: "B8939A")        // Muted mauve
 
     // MARK: - Whole Food Score Colors
-    static let wholeFood = Color(hex: "7A9A80")
-    static let mixedFood = Color(hex: "D8C080")
+    static let wholeFood = Color(hex: "8A9A7D")
+    static let mixedFood = Color(hex: "C9A962")
     static let processedFood = Color(hex: "B8A890")
 
     // MARK: - Gradients
     static var ambientGradient: LinearGradient {
         LinearGradient(
             colors: [
-                Color(hex: "F4EBE0"),
-                Color(hex: "F8F2EA"),
-                Color(hex: "FAF7F2")
+                Color(hex: "FAF8F5"),
+                Color(hex: "FBF9F6"),
+                Color(hex: "FFFFFF")
             ],
             startPoint: .top,
             endPoint: .bottom
@@ -73,7 +73,7 @@ enum ClioTheme {
 
     static var cardGlow: some View {
         RoundedRectangle(cornerRadius: cornerRadius)
-            .fill(sage.opacity(0.06))
+            .fill(terracotta.opacity(0.06))
             .blur(radius: 20)
     }
 
@@ -82,6 +82,9 @@ enum ClioTheme {
             .fill(color.opacity(0.08))
             .blur(radius: 20)
     }
+
+    // MARK: - Shadow
+    static let cardShadowColor = Color(hex: "3D3532")
 
     // MARK: - Typography (Crimson Pro serif for headings, system for body)
     // Crimson Pro for elegant editorial feel
@@ -263,12 +266,12 @@ struct ClioCardStyle: ViewModifier {
                 }
             )
             .clipShape(RoundedRectangle(cornerRadius: ClioTheme.cornerRadius, style: .continuous))
-            .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 2)
-            .shadow(color: Color.black.opacity(0.02), radius: 20, x: 0, y: 8)
+            .shadow(color: Color(hex: "3D3532").opacity(0.06), radius: 8, x: 0, y: 2)
+            .shadow(color: Color(hex: "3D3532").opacity(0.03), radius: 20, x: 0, y: 8)
     }
 }
 
-/// Primary button - muted, organic feel
+/// Primary button - terracotta fill with white text
 struct ClioPrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -278,12 +281,12 @@ struct ClioPrimaryButtonStyle: ButtonStyle {
             .frame(height: 54)
             .background(
                 ZStack {
-                    ClioTheme.primaryMuted  // More muted sage for less saturation
+                    ClioTheme.primary  // Terracotta
                     GrainTexture(opacity: 0.03)
                 }
             )
             .clipShape(RoundedRectangle(cornerRadius: ClioTheme.cornerRadius, style: .continuous))
-            .shadow(color: ClioTheme.primaryMuted.opacity(0.15), radius: 8, x: 0, y: 4)
+            .shadow(color: ClioTheme.primary.opacity(0.20), radius: 8, x: 0, y: 4)
             .opacity(configuration.isPressed ? 0.9 : 1.0)
             .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
             .animation(.easeOut(duration: 0.15), value: configuration.isPressed)

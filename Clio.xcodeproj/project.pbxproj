@@ -36,7 +36,6 @@
 		A1000022000000000000001C /* AnimationHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000022000000000000001C /* AnimationHelpers.swift */; };
 		A1000023000000000000001D /* KeyboardHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000023000000000000001D /* KeyboardHelpers.swift */; };
 		A1000024000000000000001E /* DataExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000024000000000000001E /* DataExporter.swift */; };
-		4CCFEC42AE83FE1D86B2F632 /* PhotoCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9093BBC846B60FC462DC22D8 /* PhotoCapture.swift */; };
 		A10000500000000000000050 /* AddMealView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000500000000000000050 /* AddMealView.swift */; };
 		A10000510000000000000051 /* AddMovementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000510000000000000051 /* AddMovementView.swift */; };
 		A10000520000000000000052 /* EatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000520000000000000052 /* EatView.swift */; };
@@ -48,13 +47,18 @@
 		A10000570000000000000057 /* CorrelationEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000570000000000000057 /* CorrelationEngine.swift */; };
 		A10000580000000000000058 /* CyclePhaseEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000580000000000000058 /* CyclePhaseEngine.swift */; };
 		A10000590000000000000059 /* InsightGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000590000000000000059 /* InsightGenerator.swift */; };
+		S10000010000000000000001 /* SampleDataGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = S20000010000000000000001 /* SampleDataGenerator.swift */; };
 		P10000010000000000000001 /* PhaseHeroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = P20000010000000000000001 /* PhaseHeroView.swift */; };
+		E10000010000000000000001 /* EditMealView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000010000000000000001 /* EditMealView.swift */; };
 		F10000010000000000000001 /* CrimsonPro-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F20000010000000000000001 /* CrimsonPro-Regular.ttf */; };
 		F10000020000000000000002 /* CrimsonPro-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F20000020000000000000002 /* CrimsonPro-Medium.ttf */; };
 		F10000030000000000000003 /* CrimsonPro-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F20000030000000000000003 /* CrimsonPro-SemiBold.ttf */; };
+		PRI000010000000000000001 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = PRI000020000000000000001 /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		ENT000010000000000000001 /* Clio.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Clio.entitlements; sourceTree = "<group>"; };
+		PRI000020000000000000001 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		A20000010000000000000001 /* ClioApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClioApp.swift; sourceTree = "<group>"; };
 		A20000020000000000000002 /* ClioTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClioTheme.swift; sourceTree = "<group>"; };
 		A20000030000000000000003 /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
@@ -80,7 +84,6 @@
 		A2000023000000000000001D /* KeyboardHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardHelpers.swift; sourceTree = "<group>"; };
 		A2000024000000000000001E /* DataExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataExporter.swift; sourceTree = "<group>"; };
 		A3000001000000000000001A /* Clio.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Clio.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		9093BBC846B60FC462DC22D8 /* PhotoCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoCapture.swift; sourceTree = "<group>"; };
 		A20000500000000000000050 /* AddMealView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddMealView.swift; sourceTree = "<group>"; };
 		A20000510000000000000051 /* AddMovementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddMovementView.swift; sourceTree = "<group>"; };
 		A20000520000000000000052 /* EatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EatView.swift; sourceTree = "<group>"; };
@@ -92,12 +95,14 @@
 		A20000570000000000000057 /* CorrelationEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CorrelationEngine.swift; sourceTree = "<group>"; };
 		A20000580000000000000058 /* CyclePhaseEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CyclePhaseEngine.swift; sourceTree = "<group>"; };
 		A20000590000000000000059 /* InsightGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightGenerator.swift; sourceTree = "<group>"; };
+		S20000010000000000000001 /* SampleDataGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleDataGenerator.swift; sourceTree = "<group>"; };
 		I10000010000000000000001 /* yoga-follicular.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "yoga-follicular.png"; sourceTree = "<group>"; };
 		I10000020000000000000002 /* contemplation-luteal.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "contemplation-luteal.png"; sourceTree = "<group>"; };
 		I10000030000000000000003 /* eating-healthy.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "eating-healthy.png"; sourceTree = "<group>"; };
 		I10000040000000000000004 /* hiking-ovulation.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "hiking-ovulation.png"; sourceTree = "<group>"; };
 		I10000050000000000000005 /* eating-menstrual.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "eating-menstrual.png"; sourceTree = "<group>"; };
 		P20000010000000000000001 /* PhaseHeroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhaseHeroView.swift; sourceTree = "<group>"; };
+		E20000010000000000000001 /* EditMealView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditMealView.swift; sourceTree = "<group>"; };
 		F20000010000000000000001 /* CrimsonPro-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "CrimsonPro-Regular.ttf"; sourceTree = "<group>"; };
 		F20000020000000000000002 /* CrimsonPro-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "CrimsonPro-Medium.ttf"; sourceTree = "<group>"; };
 		F20000030000000000000003 /* CrimsonPro-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "CrimsonPro-SemiBold.ttf"; sourceTree = "<group>"; };
@@ -125,6 +130,8 @@
 		A5000002000000000000001D /* Clio */ = {
 			isa = PBXGroup;
 			children = (
+				ENT000010000000000000001 /* Clio.entitlements */,
+				PRI000020000000000000001 /* PrivacyInfo.xcprivacy */,
 				A20000010000000000000001 /* ClioApp.swift */,
 				A5000004000000000000001F /* Theme */,
 				A50000050000000000000020 /* Models */,
@@ -174,7 +181,6 @@
 				A20000080000000000000008 /* MovementTypeCard.swift */,
 				A20000090000000000000009 /* EnergySlider.swift */,
 				A2000010000000000000000A /* SensationChip.swift */,
-				9093BBC846B60FC462DC22D8 /* PhotoCapture.swift */,
 				P20000010000000000000001 /* PhaseHeroView.swift */,
 			);
 			path = Components;
@@ -189,6 +195,7 @@
 				A20000500000000000000050 /* AddMealView.swift */,
 				A20000510000000000000051 /* AddMovementView.swift */,
 				A20000520000000000000052 /* EatView.swift */,
+				E20000010000000000000001 /* EditMealView.swift */,
 				A20000530000000000000053 /* FeelCheckView.swift */,
 				A20000540000000000000054 /* InsightsView.swift */,
 				A20000550000000000000055 /* MoveView.swift */,
@@ -214,6 +221,7 @@
 				A20000570000000000000057 /* CorrelationEngine.swift */,
 				A20000580000000000000058 /* CyclePhaseEngine.swift */,
 				A20000590000000000000059 /* InsightGenerator.swift */,
+				S20000010000000000000001 /* SampleDataGenerator.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -348,6 +356,7 @@
 				F10000010000000000000001 /* CrimsonPro-Regular.ttf in Resources */,
 				F10000020000000000000002 /* CrimsonPro-Medium.ttf in Resources */,
 				F10000030000000000000003 /* CrimsonPro-SemiBold.ttf in Resources */,
+				PRI000010000000000000001 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -376,10 +385,10 @@
 				A1000022000000000000001C /* AnimationHelpers.swift in Sources */,
 				A1000023000000000000001D /* KeyboardHelpers.swift in Sources */,
 				A1000024000000000000001E /* DataExporter.swift in Sources */,
-				4CCFEC42AE83FE1D86B2F632 /* PhotoCapture.swift in Sources */,
 				A10000500000000000000050 /* AddMealView.swift in Sources */,
 				A10000510000000000000051 /* AddMovementView.swift in Sources */,
 				A10000520000000000000052 /* EatView.swift in Sources */,
+				E10000010000000000000001 /* EditMealView.swift in Sources */,
 				A10000530000000000000053 /* FeelCheckView.swift in Sources */,
 				A10000540000000000000054 /* InsightsView.swift in Sources */,
 				A10000550000000000000055 /* MoveView.swift in Sources */,
@@ -388,6 +397,7 @@
 				A10000570000000000000057 /* CorrelationEngine.swift in Sources */,
 				A10000580000000000000058 /* CyclePhaseEngine.swift in Sources */,
 				A10000590000000000000059 /* InsightGenerator.swift in Sources */,
+				S10000010000000000000001 /* SampleDataGenerator.swift in Sources */,
 				P10000010000000000000001 /* PhaseHeroView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -519,6 +529,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Clio/Clio.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
@@ -548,6 +559,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Clio/Clio.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";

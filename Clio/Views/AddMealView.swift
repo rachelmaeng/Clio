@@ -10,8 +10,15 @@ struct AddMealView: View {
     // Optional date for logging past days
     var forDate: Date?
 
+    // Optional pre-filled food tip (when user taps a suggested food)
+    var prefilledTip: PhaseTip?
+
+    // Optional pre-selected meal type (when user taps a quick-log tile)
+    var preselectedMealType: MealEntry.MealType?
+
     @State private var mealType: MealEntry.MealType = .lunch
     @State private var foodItems: [String] = []
+    @State private var whyFoodExpanded: Bool = false
     @State private var currentFoodInput = ""
     @State private var calories: String = ""
     @State private var protein: String = ""
@@ -22,6 +29,10 @@ struct AddMealView: View {
     @State private var specificReaction: String = ""
     @State private var saveAsTemplate: Bool = false
     @State private var templateName: String = ""
+
+    // Feel after prompt
+    @State private var showFeelAfterPrompt: Bool = false
+    @State private var savedMealEntry: MealEntry?
 
     private var userSettings: UserSettings? {
         settings.first
@@ -57,8 +68,14 @@ struct AddMealView: View {
                         header
                             .fadeInFromBottom(delay: 0)
 
-                        // Saved Meals (if any exist)
-                        if !savedMeals.isEmpty {
+                        // "Why [food]?" card (if prefilled tip exists)
+                        if let tip = prefilledTip {
+                            whyFoodCard(tip: tip)
+                                .fadeInFromBottom(delay: 0.05)
+                        }
+
+                        // Saved Meals (if any exist and no prefilled tip)
+                        if !savedMeals.isEmpty && prefilledTip == nil {
                             savedMealsSection
                                 .fadeInFromBottom(delay: 0.05)
                         }
@@ -92,6 +109,16 @@ struct AddMealView: View {
                     .padding()
                     .padding(.bottom, 120)
                 }
+                .onAppear {
+                    // Pre-fill food item if a tip was provided
+                    if let tip = prefilledTip, !foodItems.contains(tip.name) {
+                        foodItems.append(tip.name)
+                    }
+                    // Pre-select meal type if provided
+                    if let preselected = preselectedMealType {
+                        mealType = preselected
+                    }
+                }
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -106,6 +133,13 @@ struct AddMealView: View {
             }
             .safeAreaInset(edge: .bottom) {
                 saveButton
+            }
+            .sheet(isPresented: $showFeelAfterPrompt) {
+                if let meal = savedMealEntry {
+                    MealFeelAfterPrompt(meal: meal) {
+                        dismiss()
+                    }
+                }
             }
         }
     }
@@ -143,6 +177,66 @@ struct AddMealView: View {
         return formatter
     }
 
+    // MARK: - Why Food Card (collapsible)
+    private func whyFoodCard(tip: PhaseTip) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Button {
+                withAnimation(.clioQuick) {
+                    whyFoodExpanded.toggle()
+                }
+            } label: {
+                HStack {
+                    HStack(spacing: 8) {
+                        Image(systemName: tip.icon)
+                            .font(.system(size: 14))
+                            .foregroundStyle(ClioTheme.eatColor)
+
+                        Text("Why \(tip.name)?")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundStyle(ClioTheme.text)
+                    }
+
+                    Spacer()
+
+                    Image(systemName: whyFoodExpanded ? "chevron.up" : "chevron.down")
+                        .font(.caption)
+                        .foregroundStyle(ClioTheme.textMuted)
+                }
+                .padding()
+                .background(ClioTheme.eatColor.opacity(0.08))
+                .clipShape(
+                    whyFoodExpanded
+                        ? UnevenRoundedRectangle(topLeadingRadius: 12, bottomLeadingRadius: 0, bottomTrailingRadius: 0, topTrailingRadius: 12)
+                        : UnevenRoundedRectangle(topLeadingRadius: 12, bottomLeadingRadius: 12, bottomTrailingRadius: 12, topTrailingRadius: 12)
+                )
+            }
+            .buttonStyle(.plain)
+
+            if whyFoodExpanded {
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(tip.whyBenefits.prefix(3), id: \.self) { benefit in
+                        HStack(alignment: .top, spacing: 8) {
+                            Circle()
+                                .fill(ClioTheme.eatColor)
+                                .frame(width: 5, height: 5)
+                                .padding(.top, 6)
+
+                            Text(benefit)
+                                .font(.caption)
+                                .foregroundStyle(ClioTheme.textMuted)
+                        }
+                    }
+                }
+                .padding()
+                .background(ClioTheme.surface)
+                .clipShape(
+                    UnevenRoundedRectangle(topLeadingRadius: 0, bottomLeadingRadius: 12, bottomTrailingRadius: 12, topTrailingRadius: 0)
+                )
+            }
+        }
+    }
+
     // MARK: - Meal Type
     private var mealTypeSection: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -150,34 +244,33 @@ struct AddMealView: View {
                 .font(.headline)
                 .foregroundStyle(ClioTheme.text)
 
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
-                    ForEach(MealEntry.MealType.allCases) { type in
-                        Button {
-                            withAnimation(.clioQuick) {
-                                mealType = type
-                            }
-                        } label: {
-                            HStack(spacing: 6) {
-                                Image(systemName: type.icon)
-                                    .font(.system(size: 14))
-
-                                Text(type.rawValue)
-                                    .font(.system(size: 15, weight: .medium))
-                                    .lineLimit(1)
-                            }
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 12)
-                            .background(mealType == type ? ClioTheme.eatColor.opacity(0.15) : ClioTheme.surface)
-                            .foregroundStyle(mealType == type ? ClioTheme.eatColor : ClioTheme.textMuted)
-                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                    .stroke(mealType == type ? ClioTheme.eatColor.opacity(0.3) : Color.clear, lineWidth: 1)
-                            )
+            HStack(spacing: 8) {
+                ForEach(MealEntry.MealType.allCases) { type in
+                    Button {
+                        withAnimation(.clioQuick) {
+                            mealType = type
                         }
-                        .buttonStyle(TipChipButtonStyle())
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: type.icon)
+                                .font(.system(size: 12))
+
+                            Text(type.rawValue)
+                                .font(.system(size: 13, weight: .medium))
+                                .lineLimit(1)
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 12)
+                        .frame(maxWidth: .infinity)
+                        .background(mealType == type ? ClioTheme.eatColor.opacity(0.15) : ClioTheme.surface)
+                        .foregroundStyle(mealType == type ? ClioTheme.eatColor : ClioTheme.textMuted)
+                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .stroke(mealType == type ? ClioTheme.eatColor.opacity(0.3) : Color.clear, lineWidth: 1)
+                        )
                     }
+                    .buttonStyle(TipChipButtonStyle())
                 }
             }
         }
@@ -193,27 +286,32 @@ struct AddMealView: View {
             VStack(spacing: 12) {
                 // Food input
                 HStack {
-                    TextField("Add food item...", text: $currentFoodInput)
+                    TextField(foodItems.isEmpty ? "e.g., Grilled chicken" : "Add another item...", text: $currentFoodInput)
                         .foregroundStyle(ClioTheme.text)
                         .submitLabel(.done)
                         .onSubmit {
                             addFoodItem()
                         }
 
-                    if !currentFoodInput.isEmpty {
-                        Button {
-                            addFoodItem()
-                        } label: {
-                            Image(systemName: "plus.circle.fill")
-                                .foregroundStyle(ClioTheme.eatColor)
-                        }
+                    Button {
+                        addFoodItem()
+                    } label: {
+                        Text("Add")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundStyle(currentFoodInput.isEmpty ? ClioTheme.textMuted : ClioTheme.eatColor)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(currentFoodInput.isEmpty ? ClioTheme.surface : ClioTheme.eatColor.opacity(0.15))
+                            .clipShape(Capsule())
                     }
+                    .disabled(currentFoodInput.isEmpty)
                 }
                 .padding()
                 .background(ClioTheme.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                // Added food items
+                // Added food items (below input)
                 if !foodItems.isEmpty {
                     FlowLayout(spacing: 8) {
                         ForEach(foodItems, id: \.self) { item in
@@ -433,15 +531,29 @@ struct AddMealView: View {
         }
     }
 
+    // Check if we have food to save (either added items OR text in input)
+    private var hasFoodToSave: Bool {
+        !foodItems.isEmpty || !currentFoodInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
     // MARK: - Save Button
     private var saveButton: some View {
-        Button {
-            saveMeal()
-        } label: {
-            Text("Save meal")
+        VStack(spacing: 8) {
+            if !hasFoodToSave {
+                Text("Add at least one food item to save")
+                    .font(.caption)
+                    .foregroundStyle(ClioTheme.textMuted)
+            }
+
+            Button {
+                saveMeal()
+            } label: {
+                Text("Save meal")
+            }
+            .buttonStyle(ClioPrimaryButtonStyle())
+            .disabled(!hasFoodToSave)
+            .opacity(hasFoodToSave ? 1.0 : 0.5)
         }
-        .buttonStyle(ClioPrimaryButtonStyle())
-        .disabled(foodItems.isEmpty)
         .padding()
         .background(
             LinearGradient(
@@ -453,9 +565,16 @@ struct AddMealView: View {
     }
 
     private func saveMeal() {
+        // Auto-add any text in the input field before saving
+        var allFoodItems = foodItems
+        let pendingItem = currentFoodInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !pendingItem.isEmpty && !allFoodItems.contains(pendingItem) {
+            allFoodItems.append(pendingItem)
+        }
+
         let meal = MealEntry(
             mealType: mealType.rawValue,
-            foodItems: foodItems
+            foodItems: allFoodItems
         )
 
         // Use target date for past day logging
@@ -493,7 +612,7 @@ struct AddMealView: View {
         if saveAsTemplate && !templateName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             let savedMeal = SavedMeal(
                 name: templateName.trimmingCharacters(in: .whitespacesAndNewlines),
-                foodItems: foodItems,
+                foodItems: allFoodItems,
                 calories: calValue,
                 protein: protValue,
                 carbs: carbValue,
@@ -506,7 +625,87 @@ struct AddMealView: View {
         }
 
         try? modelContext.save()
-        dismiss()
+
+        // Show feel after prompt
+        savedMealEntry = meal
+        showFeelAfterPrompt = true
+    }
+}
+
+// MARK: - Meal Feel After Prompt
+struct MealFeelAfterPrompt: View {
+    @Environment(\.modelContext) private var modelContext
+    let meal: MealEntry
+    let onComplete: () -> Void
+
+    var body: some View {
+        VStack(spacing: 24) {
+            // Header
+            VStack(spacing: 8) {
+                Text("How did this meal make you feel?")
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(ClioTheme.text)
+                    .multilineTextAlignment(.center)
+            }
+            .padding(.top, 32)
+
+            // Feel options - 3x2 grid
+            LazyVGrid(columns: [
+                GridItem(.flexible(), spacing: 12),
+                GridItem(.flexible(), spacing: 12),
+                GridItem(.flexible(), spacing: 12)
+            ], spacing: 12) {
+                ForEach(MealEntry.MealFeelAfter.allCases) { feel in
+                    Button {
+                        selectFeelAfter(feel)
+                    } label: {
+                        VStack(spacing: 6) {
+                            Image(systemName: feel.icon)
+                                .font(.system(size: 20))
+                            Text(feel.rawValue)
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                        }
+                        .foregroundStyle(ClioTheme.text)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(ClioTheme.surface)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(ClioTheme.surfaceHighlight, lineWidth: 1)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal)
+
+            Spacer()
+
+            // Skip button
+            Button {
+                onComplete()
+            } label: {
+                Text("Skip")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundStyle(ClioTheme.textMuted)
+            }
+            .padding(.bottom, 32)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(ClioTheme.background)
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
+    }
+
+    private func selectFeelAfter(_ feel: MealEntry.MealFeelAfter) {
+        meal.feelAfter = feel.rawValue
+        meal.updatedAt = Date()
+        try? modelContext.save()
+        onComplete()
     }
 }
 

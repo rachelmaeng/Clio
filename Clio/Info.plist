@@ -8,5 +8,16 @@
 		<string>CrimsonPro-Medium.ttf</string>
 		<string>CrimsonPro-SemiBold.ttf</string>
 	</array>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string>LaunchScreenBackground</string>
+		<key>UIImageName</key>
+		<string>LaunchIcon</string>
+	</dict>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Clio uses your health data to provide personalized insights about how your cycle affects your wellness, energy, and movement patterns.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Clio can save your workouts and wellness data to Apple Health to keep all your health information in one place.</string>
 </dict>
 </plist>

@@ -7,13 +7,14 @@ struct HomeView: View {
     @Query(sort: \FeelCheck.dateTime, order: .reverse) private var feelChecks: [FeelCheck]
     @Query(sort: \MovementEntry.dateTime, order: .reverse) private var movements: [MovementEntry]
     @Query(sort: \MealEntry.dateTime, order: .reverse) private var meals: [MealEntry]
-    @Query(sort: \PersonalInsight.createdAt, order: .reverse) private var insights: [PersonalInsight]
+    @Query(sort: \PersonalInsight.confidenceScore, order: .reverse) private var insights: [PersonalInsight]
+
+    @Binding var selectedTab: MainTabView.Tab
 
     @State private var showFeelCheck = false
     @State private var showAddMeal = false
     @State private var showAddMovement = false
     @State private var showQuickLog = false
-    @State private var selectedTip: PhaseTip?
 
     private var userSettings: UserSettings? {
         settings.first
@@ -48,61 +49,66 @@ struct HomeView: View {
         return movements.filter { Calendar.current.isDate($0.dateTime, inSameDayAs: today) }
     }
 
-    private var todayCalories: Int {
-        todayMeals.compactMap { $0.calories }.reduce(0, +)
-    }
-
     private var todayMinutes: Int {
         todayMovements.compactMap { $0.durationMinutes }.reduce(0, +)
     }
 
-    private var newInsights: [PersonalInsight] {
-        insights.filter { $0.isNew && !$0.hasBeenDismissed }.prefix(2).map { $0 }
+    /// Top high-confidence insight (70%+) for the home screen card — only shown when checked in
+    private var topInsight: PersonalInsight? {
+        guard todayFeelCheck != nil else { return nil }
+        return insights.first { !$0.hasBeenDismissed && $0.confidenceScore >= 0.70 }
+    }
+
+    /// Movement summary text for today card
+    private var movementSummaryText: String? {
+        guard let first = todayMovements.first else { return nil }
+        let type = first.movementType?.rawValue ?? first.type
+        if let mins = first.durationMinutes {
+            return "\(type) · \(mins) min"
+        }
+        return type
+    }
+
+    /// Meal types logged today (e.g., "Lunch, Snack")
+    private var mealTypesSummary: String {
+        let types = todayMeals.compactMap { $0.meal?.rawValue }
+        let unique = Array(Set(types))
+        return unique.joined(separator: ", ")
     }
 
     var body: some View {
         NavigationStack {
-            ZStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    // Phase Hero - at very top, edge to edge (matches Eat/Move tabs)
+                    homeHero
+                        .padding(.horizontal, -ClioTheme.spacing) // Break out of VStack padding
+
+                    // Feel Check CTA or compact summary
+                    feelCheckSection
+                        .fadeInFromBottom(delay: 0.1)
+
+                    // Today's Summary (always visible with empty states)
+                    todaySummary
+                        .fadeInFromBottom(delay: 0.15)
+
+                    // Insight card (only when checked in + 70%+ confidence)
+                    if let insight = topInsight {
+                        insightCard(insight)
+                            .fadeInFromBottom(delay: 0.2)
+                    }
+                }
+                .padding(.horizontal, ClioTheme.spacing)
+            }
+            .scrollIndicators(.hidden)
+            .ignoresSafeArea(edges: .top)
+            .background(
                 ClioTheme.background
                     .withGrain(opacity: 0.025)
                     .ignoresSafeArea()
-
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 24) {
-                        // Phase Hero Illustration - full width, extends into safe area
-                        PhaseHeroView(phase: currentPhase, height: 180)
-                            .padding(.horizontal, -ClioTheme.spacing) // Break out of VStack padding
-                            .fadeInFromBottom(delay: 0)
-
-                        // Header with greeting
-                        header
-                            .fadeInFromBottom(delay: 0.05)
-
-                        // Feel Check CTA or Summary
-                        feelCheckSection
-                            .fadeInFromBottom(delay: 0.1)
-
-                        // Today's Summary
-                        todaySummary
-                            .fadeInFromBottom(delay: 0.2)
-
-                        // New Insights (if any)
-                        if !newInsights.isEmpty {
-                            insightsPreview
-                                .fadeInFromBottom(delay: 0.3)
-                        }
-
-                        // Phase Tips Preview
-                        phaseTips
-                            .fadeInFromBottom(delay: 0.4)
-                    }
-                    .padding(.horizontal, ClioTheme.spacing)
-                    .padding(.bottom, 100)
-                }
-                .scrollContentBackground(.hidden)
-                .ignoresSafeArea(edges: .top)
-            }
+            )
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.hidden, for: .navigationBar)
             .sheet(isPresented: $showFeelCheck) {
                 FeelCheckView()
             }
@@ -112,16 +118,109 @@ struct HomeView: View {
             .sheet(isPresented: $showAddMovement) {
                 AddMovementView()
             }
-            .sheet(item: $selectedTip) { tip in
-                HomeTipDetailSheet(tip: tip, phase: currentPhase)
-            }
             .sheet(isPresented: $showQuickLog) {
                 QuickDailyLogView()
             }
         }
     }
 
-    // MARK: - Header
+    // MARK: - Home Hero Illustration
+
+    private var heroImageName: String {
+        "eating-menstrual" // Same image as PhaseHeroView uses
+    }
+
+    private func loadBundleImage(_ name: String) -> Image {
+        if let uiImage = UIImage(named: name) {
+            return Image(uiImage: uiImage)
+        } else if let path = Bundle.main.path(forResource: name, ofType: "png"),
+                  let uiImage = UIImage(contentsOfFile: path) {
+            return Image(uiImage: uiImage)
+        }
+        return Image(systemName: "photo")
+    }
+
+    private var homeHero: some View {
+        ZStack(alignment: .bottomLeading) {
+            // Solid background to prevent any flash
+            ClioTheme.background
+                .frame(height: 380)
+
+            // Full illustration - aligned to BOTTOM to show person
+            loadBundleImage(heroImageName)
+                .resizable()
+                .scaledToFill()
+                .frame(height: 380, alignment: .bottom)
+                .clipped()
+                .overlay(
+                    GrainTexture(opacity: 0.05)
+                        .blendMode(.overlay)
+                )
+
+            // Bottom fade into background
+            LinearGradient(
+                colors: [
+                    ClioTheme.background,
+                    ClioTheme.background.opacity(0.9),
+                    ClioTheme.background.opacity(0.0)
+                ],
+                startPoint: .bottom,
+                endPoint: .top
+            )
+            .frame(height: 120)
+            .frame(maxHeight: .infinity, alignment: .bottom)
+
+            // Greeting + Log button overlaid on gradient
+            HStack(alignment: .bottom) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(greeting)
+                        .font(ClioTheme.headingFont(22))
+                        .foregroundStyle(ClioTheme.text)
+
+                    HStack(spacing: 6) {
+                        Circle()
+                            .fill(ClioTheme.phaseColor(for: currentPhase))
+                            .frame(width: 6, height: 6)
+
+                        if let day = userSettings?.dayOfCycle {
+                            Text("\(currentPhase.description) · Day \(day)")
+                                .font(ClioTheme.captionFont(13))
+                                .foregroundStyle(ClioTheme.textMuted)
+                        } else {
+                            Text(currentPhase.description)
+                                .font(ClioTheme.captionFont(13))
+                                .foregroundStyle(ClioTheme.textMuted)
+                        }
+                    }
+                }
+
+                Spacer()
+
+                // Quick Log button
+                Button {
+                    showQuickLog = true
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 12, weight: .bold))
+                        Text("Log")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                    }
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(ClioTheme.terracotta)
+                    .clipShape(Capsule())
+                }
+            }
+            .padding(.horizontal, ClioTheme.spacing)
+            .padding(.bottom, 10)
+        }
+    }
+
+    // MARK: - Header (legacy, now in hero)
     private var header: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
@@ -130,19 +229,25 @@ struct HomeView: View {
                     .fontWeight(.semibold)
                     .foregroundStyle(ClioTheme.text)
 
-                // Day indicator
-                if let day = userSettings?.dayOfCycle {
-                    HStack(spacing: 6) {
-                        Circle()
-                            .fill(ClioTheme.phaseColor(for: currentPhase))
-                            .frame(width: 6, height: 6)
+                // Phase indicator with day
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(ClioTheme.phaseColor(for: currentPhase))
+                        .frame(width: 6, height: 6)
 
-                        Text("Day \(day) of your cycle")
+                    if let day = userSettings?.dayOfCycle {
+                        Text("\(currentPhase.description) · Day \(day)")
+                            .font(.subheadline)
+                            .foregroundStyle(ClioTheme.textMuted)
+                    } else {
+                        Text(currentPhase.description)
                             .font(.subheadline)
                             .foregroundStyle(ClioTheme.textMuted)
                     }
                 }
             }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("\(greeting). \(currentPhase.description), day \(userSettings?.dayOfCycle ?? 1) of your cycle")
 
             Spacer()
 
@@ -164,6 +269,8 @@ struct HomeView: View {
                 .background(Capsule().fill(ClioTheme.primary))
             }
             .buttonStyle(ScaleButtonStyle())
+            .accessibilityLabel("Quick log")
+            .accessibilityHint("Opens quick logging options for meals, movement, and check-ins")
         }
     }
 
@@ -171,48 +278,27 @@ struct HomeView: View {
     @ViewBuilder
     private var feelCheckSection: some View {
         if let feelCheck = todayFeelCheck {
-            // Show today's feel check summary
-            HStack(spacing: 16) {
-                // Energy indicator
-                VStack(spacing: 4) {
-                    ZStack {
-                        Circle()
-                            .fill(ClioTheme.feelColor.opacity(0.15))
-                            .frame(width: 56, height: 56)
+            // Compact checked-in state
+            HStack(spacing: 10) {
+                if let stateRaw = feelCheck.primaryState,
+                   let state = FeelCheck.PrimaryState(rawValue: stateRaw) {
+                    Image(systemName: state.icon)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(state.isPositive ? ClioTheme.success : ClioTheme.terracotta)
 
-                        Text("\(feelCheck.energyLevel)")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .foregroundStyle(ClioTheme.feelColor)
-                    }
-
-                    Text("Energy")
-                        .font(.caption2)
-                        .foregroundStyle(ClioTheme.textMuted)
-                }
-
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Feeling \(feelCheck.overallFeeling.lowercased()) today")
-                        .font(.headline)
+                    Text("Checked in: \(state.rawValue)")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
                         .foregroundStyle(ClioTheme.text)
+                } else {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(ClioTheme.success)
 
-                    if !feelCheck.moods.isEmpty {
-                        HStack(spacing: 4) {
-                            ForEach(feelCheck.moods.prefix(3), id: \.self) { mood in
-                                if let moodEnum = FeelCheck.Mood(rawValue: mood) {
-                                    Image(systemName: moodEnum.icon)
-                                        .font(.caption)
-                                        .foregroundStyle(ClioTheme.textMuted)
-                                }
-                            }
-
-                            if feelCheck.moods.count > 3 {
-                                Text("+\(feelCheck.moods.count - 3)")
-                                    .font(.caption)
-                                    .foregroundStyle(ClioTheme.textMuted)
-                            }
-                        }
-                    }
+                    Text("Checked in")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundStyle(ClioTheme.text)
                 }
 
                 Spacer()
@@ -220,265 +306,218 @@ struct HomeView: View {
                 Button {
                     showFeelCheck = true
                 } label: {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.title2)
+                    Text("Update")
+                        .font(.caption)
+                        .fontWeight(.medium)
                         .foregroundStyle(ClioTheme.feelColor)
                 }
             }
-            .padding()
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
             .background(ClioTheme.surface)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
         } else {
-            // CTA to check in
+            // CTA to check in - prominent card
             Button {
                 showFeelCheck = true
             } label: {
-                HStack(spacing: 16) {
-                    ZStack {
-                        Circle()
-                            .fill(ClioTheme.feelColor.opacity(0.15))
-                            .frame(width: 56, height: 56)
-
-                        Image(systemName: "heart.circle.fill")
-                            .font(.title2)
-                            .foregroundStyle(ClioTheme.feelColor)
-                    }
-
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("How are you feeling?")
-                            .font(.headline)
+                VStack(spacing: 16) {
+                    VStack(spacing: 6) {
+                        Text("How does your body feel?")
+                            .font(.title3)
+                            .fontWeight(.semibold)
                             .foregroundStyle(ClioTheme.text)
 
-                        Text("Take a moment to check in")
+                        Text("Take a moment to check in with yourself")
                             .font(.subheadline)
                             .foregroundStyle(ClioTheme.textMuted)
                     }
 
-                    Spacer()
-
-                    Image(systemName: "chevron.right")
-                        .font(.caption)
-                        .foregroundStyle(ClioTheme.textMuted)
+                    Text("Check in")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                        .background(Capsule().fill(ClioTheme.terracotta))
                 }
-                .padding()
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 24)
+                .padding(.horizontal, ClioTheme.spacing)
                 .background(
                     LinearGradient(
-                        colors: [ClioTheme.feelColor.opacity(0.1), ClioTheme.surface],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
+                        colors: [ClioTheme.feelColor.opacity(0.08), ClioTheme.surface],
+                        startPoint: .top,
+                        endPoint: .bottom
                     )
                 )
-                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .clipShape(RoundedRectangle(cornerRadius: 20))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(ClioTheme.feelColor.opacity(0.2), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(ClioTheme.feelColor.opacity(0.15), lineWidth: 1)
                 )
             }
             .buttonStyle(TipChipButtonStyle())
         }
     }
 
-    // MARK: - Today's Summary
+    // MARK: - Insight Card
+    private func insightCard(_ insight: PersonalInsight) -> some View {
+        Button {
+            selectedTab = .insights
+        } label: {
+            HStack(spacing: 14) {
+                // Icon
+                ZStack {
+                    Circle()
+                        .fill(ClioTheme.insightColor.opacity(0.15))
+                        .frame(width: 40, height: 40)
+
+                    Image(systemName: insight.insightTypeEnum?.icon ?? "lightbulb")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(ClioTheme.insightColor)
+                }
+
+                // Text
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(insight.title)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundStyle(ClioTheme.text)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+
+                    Text(insight.confidenceText)
+                        .font(.caption)
+                        .foregroundStyle(ClioTheme.textMuted)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundStyle(ClioTheme.textMuted)
+            }
+            .padding()
+            .background(ClioTheme.surface)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(ClioTheme.insightColor.opacity(0.15), lineWidth: 1)
+            )
+        }
+        .buttonStyle(TipChipButtonStyle())
+        .accessibilityLabel("Insight: \(insight.title)")
+        .accessibilityHint("Double tap to view all insights")
+    }
+
+    // MARK: - Today's Summary (always visible, compact cards with empty states)
     private var todaySummary: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             Text("Today")
                 .font(.headline)
                 .foregroundStyle(ClioTheme.text)
 
-            HStack(spacing: 12) {
-                // Nutrition summary
+            HStack(spacing: 10) {
+                // Meals card
                 Button {
-                    showAddMeal = true
+                    selectedTab = .eat
                 } label: {
-                    VStack(spacing: 12) {
+                    HStack(spacing: 10) {
                         Image(systemName: "fork.knife")
-                            .font(.title3)
+                            .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(ClioTheme.eatColor)
 
-                        VStack(spacing: 2) {
-                            if userSettings?.hasCalorieGoal == true {
-                                Text("\(todayCalories)")
-                                    .font(.title3)
-                                    .fontWeight(.bold)
-                                    .foregroundStyle(ClioTheme.text)
-
-                                Text("cal")
+                        if todayMeals.isEmpty {
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text("No meals yet")
                                     .font(.caption)
+                                    .fontWeight(.medium)
                                     .foregroundStyle(ClioTheme.textMuted)
-                            } else {
-                                Text("\(todayMeals.count)")
-                                    .font(.title3)
-                                    .fontWeight(.bold)
-                                    .foregroundStyle(ClioTheme.text)
-
-                                Text("meals")
+                                Text("Log eating")
+                                    .font(.caption2)
+                                    .foregroundStyle(ClioTheme.eatColor)
+                            }
+                        } else {
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text("\(todayMeals.count) meal\(todayMeals.count == 1 ? "" : "s")")
                                     .font(.caption)
-                                    .foregroundStyle(ClioTheme.textMuted)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(ClioTheme.text)
+                                if !mealTypesSummary.isEmpty {
+                                    Text(mealTypesSummary)
+                                        .font(.caption2)
+                                        .foregroundStyle(ClioTheme.textMuted)
+                                        .lineLimit(1)
+                                }
                             }
                         }
+
+                        Spacer()
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal, ClioTheme.spacing)
-                    .padding(.vertical, 20)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 14)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .background(ClioTheme.surface)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
                 .buttonStyle(TipChipButtonStyle())
+                .accessibilityLabel(todayMeals.isEmpty ? "No meals logged. Tap to log eating" : "\(todayMeals.count) meals logged today")
+                .accessibilityHint("Double tap to view meals")
 
-                // Movement summary
+                // Movement card
                 Button {
-                    showAddMovement = true
+                    selectedTab = .move
                 } label: {
-                    VStack(spacing: 12) {
+                    HStack(spacing: 10) {
                         Image(systemName: "figure.run")
-                            .font(.title3)
+                            .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(ClioTheme.moveColor)
 
-                        VStack(spacing: 2) {
-                            Text("\(todayMinutes)")
-                                .font(.title3)
-                                .fontWeight(.bold)
-                                .foregroundStyle(ClioTheme.text)
-
-                            Text("min")
-                                .font(.caption)
-                                .foregroundStyle(ClioTheme.textMuted)
+                        if todayMovements.isEmpty {
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text("No movement yet")
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                                    .foregroundStyle(ClioTheme.textMuted)
+                                Text("Log activity")
+                                    .font(.caption2)
+                                    .foregroundStyle(ClioTheme.moveColor)
+                            }
+                        } else {
+                            VStack(alignment: .leading, spacing: 1) {
+                                if let summary = movementSummaryText {
+                                    Text(summary)
+                                        .font(.caption)
+                                        .fontWeight(.semibold)
+                                        .foregroundStyle(ClioTheme.text)
+                                        .lineLimit(1)
+                                }
+                                if todayMovements.count > 1 {
+                                    Text("+\(todayMovements.count - 1) more")
+                                        .font(.caption2)
+                                        .foregroundStyle(ClioTheme.textMuted)
+                                } else if todayMinutes > 0 {
+                                    Text("\(todayMinutes) min total")
+                                        .font(.caption2)
+                                        .foregroundStyle(ClioTheme.textMuted)
+                                }
+                            }
                         }
+
+                        Spacer()
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal, ClioTheme.spacing)
-                    .padding(.vertical, 20)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 14)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .background(ClioTheme.surface)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
                 .buttonStyle(TipChipButtonStyle())
-
-                // Calorie burn summary (if enabled)
-                if userSettings?.showCalorieBurnEstimate == true {
-                    let burnedCals = todayMovements.compactMap { $0.estimatedCaloriesBurned }.reduce(0, +)
-
-                    VStack(spacing: 12) {
-                        Image(systemName: "flame.fill")
-                            .font(.title3)
-                            .foregroundStyle(ClioTheme.terracotta)
-
-                        VStack(spacing: 2) {
-                            Text("\(burnedCals)")
-                                .font(.title3)
-                                .fontWeight(.bold)
-                                .foregroundStyle(ClioTheme.text)
-
-                            Text("burned")
-                                .font(.caption)
-                                .foregroundStyle(ClioTheme.textMuted)
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal, ClioTheme.spacing)
-                    .padding(.vertical, 20)
-                    .background(ClioTheme.surface)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                }
+                .accessibilityLabel(todayMovements.isEmpty ? "No movement logged. Tap to log activity" : "\(todayMinutes) minutes of movement today")
+                .accessibilityHint("Double tap to view workouts")
             }
         }
-    }
-
-    // MARK: - Insights Preview
-    private var insightsPreview: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("New for you")
-                    .font(.headline)
-                    .foregroundStyle(ClioTheme.text)
-
-                Circle()
-                    .fill(ClioTheme.primary)
-                    .frame(width: 8, height: 8)
-
-                Spacer()
-            }
-
-            ForEach(newInsights) { insight in
-                HStack(spacing: 12) {
-                    Image(systemName: "sparkles")
-                        .font(.caption)
-                        .foregroundStyle(ClioTheme.insightColor)
-
-                    Text(insight.title)
-                        .font(.subheadline)
-                        .foregroundStyle(ClioTheme.text)
-                        .lineLimit(2)
-
-                    Spacer()
-                }
-                .padding()
-                .background(ClioTheme.surface)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-            }
-        }
-    }
-
-    // MARK: - Phase Tips
-    private var phaseTips: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Suggested for \(currentPhase.description)")
-                .font(.headline)
-                .foregroundStyle(ClioTheme.text)
-
-            // Food tips
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Nourishment")
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundStyle(ClioTheme.textMuted)
-                    .textCase(.uppercase)
-                    .tracking(0.5)
-
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 12) {
-                        ForEach(Array(PhaseTipDatabase.foodTips(for: currentPhase).prefix(4).enumerated()), id: \.element.id) { index, tip in
-                            Button {
-                                selectedTip = tip
-                            } label: {
-                                HomeTipCard(tip: tip, color: ClioTheme.eatColor)
-                            }
-                            .buttonStyle(TipChipButtonStyle())
-                            .staggeredAppearance(index: index, delay: 0.05)
-                        }
-                    }
-                }
-            }
-
-            // Movement tips
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Movement")
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundStyle(ClioTheme.textMuted)
-                    .textCase(.uppercase)
-                    .tracking(0.5)
-
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 12) {
-                        ForEach(Array(PhaseTipDatabase.movementTips(for: currentPhase).prefix(4).enumerated()), id: \.element.id) { index, tip in
-                            Button {
-                                selectedTip = tip
-                            } label: {
-                                HomeTipCard(tip: tip, color: ClioTheme.moveColor)
-                            }
-                            .buttonStyle(TipChipButtonStyle())
-                            .staggeredAppearance(index: index, delay: 0.05)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private var formattedDate: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMM d"
-        return formatter.string(from: Date())
     }
 }
 
@@ -781,6 +820,6 @@ struct HomeTipDetailSheet: View {
 }
 
 #Preview {
-    HomeView()
+    HomeView(selectedTab: .constant(.home))
         .modelContainer(for: [UserSettings.self, FeelCheck.self, MovementEntry.self, MealEntry.self, PersonalInsight.self], inMemory: true)
 }

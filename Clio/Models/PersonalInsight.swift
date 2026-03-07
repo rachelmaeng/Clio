@@ -99,17 +99,42 @@ final class PersonalInsight {
 
     // MARK: - Insight Types
     enum InsightType: String, CaseIterable {
-        case correlation = "correlation"  // "X leads to Y"
-        case pattern = "pattern"  // "You tend to X during Y phase"
+        case crossSignal = "cross_signal"  // Movement/meal correlates with check-in state
+        case cycleAware = "cycle_aware"  // Phase-specific patterns (needs 2+ cycles)
+        case timing = "timing"  // Time-of-day patterns
+        case consistency = "consistency"  // Streaks, rest day patterns
+        case movementTimingCheckin = "movement_timing_checkin"  // Movement time of day → check-in state
+        case mealTimingCheckin = "meal_timing_checkin"  // First meal timing → check-in state
+        case checkinPhase = "checkin_phase"  // Check-in PrimaryState → cycle phase
+        case movementFeelingCheckin = "movement_feeling_checkin"  // Movement feelAfter → check-in PrimaryState
+        case correlation = "correlation"  // Legacy: "X leads to Y"
+        case pattern = "pattern"  // Legacy: "You tend to X during Y phase"
         case suggestion = "suggestion"  // "Based on patterns, try X"
         case milestone = "milestone"  // "You've logged 30 days!"
 
         var icon: String {
             switch self {
+            case .crossSignal: return "arrow.triangle.branch"
+            case .cycleAware: return "moon.stars"
+            case .timing: return "clock"
+            case .consistency: return "chart.bar.fill"
+            case .movementTimingCheckin: return "clock.arrow.circlepath"
+            case .mealTimingCheckin: return "clock.arrow.circlepath"
+            case .checkinPhase: return "moon.stars"
+            case .movementFeelingCheckin: return "figure.run.circle"
             case .correlation: return "arrow.triangle.branch"
             case .pattern: return "waveform.path.ecg.rectangle"
             case .suggestion: return "lightbulb.fill"
             case .milestone: return "star.fill"
+            }
+        }
+
+        var groupTitle: String {
+            switch self {
+            case .crossSignal, .correlation, .movementFeelingCheckin: return "This cycle"
+            case .cycleAware, .pattern, .checkinPhase: return "Cycle patterns"
+            case .timing, .consistency, .movementTimingCheckin, .mealTimingCheckin: return "Over time"
+            case .suggestion, .milestone: return "For you"
             }
         }
     }
@@ -187,8 +212,9 @@ final class PersonalInsight {
         occurrences: Int,
         total: Int
     ) -> PersonalInsight {
-        let phaseText = phase.map { "during \($0.description.lowercased())" } ?? ""
+        let phaseText = phase.map { " during \($0.description.lowercased())" } ?? ""
         let confidence = Double(occurrences) / Double(total)
+        let percentage = Int(confidence * 100)
 
         return PersonalInsight(
             category: "food",
@@ -200,9 +226,8 @@ final class PersonalInsight {
             occurrences: occurrences,
             totalOpportunities: total,
             confidenceScore: confidence,
-            title: "\(food) helps you feel \(outcome.lowercased())",
-            body: "You've eaten \(food.lowercased()) \(phaseText) \(total) times and felt \(outcome.lowercased()) \(occurrences) times.",
-            suggestion: "Consider adding \(food.lowercased()) to your meals \(phaseText)."
+            title: "\(food) has lined up with feeling \(outcome.lowercased())",
+            body: "You've eaten \(food.lowercased())\(phaseText) \(total) times and felt \(outcome.lowercased()) \(occurrences) times (\(percentage)%)."
         )
     }
 
@@ -213,8 +238,9 @@ final class PersonalInsight {
         occurrences: Int,
         total: Int
     ) -> PersonalInsight {
-        let phaseText = phase.map { "during \($0.description.lowercased())" } ?? ""
+        let phaseText = phase.map { " during \($0.description.lowercased())" } ?? ""
         let confidence = Double(occurrences) / Double(total)
+        let percentage = Int(confidence * 100)
 
         return PersonalInsight(
             category: "movement",
@@ -226,9 +252,8 @@ final class PersonalInsight {
             occurrences: occurrences,
             totalOpportunities: total,
             confidenceScore: confidence,
-            title: "\(movement) helps you feel \(outcome.lowercased())",
-            body: "You've done \(movement.lowercased()) \(phaseText) \(total) times and felt \(outcome.lowercased()) \(occurrences) times.",
-            suggestion: "Try \(movement.lowercased()) again \(phaseText)."
+            title: "\(movement) has lined up with feeling \(outcome.lowercased())",
+            body: "You've done \(movement.lowercased())\(phaseText) \(total) times and felt \(outcome.lowercased()) \(occurrences) times (\(percentage)%)."
         )
     }
 }

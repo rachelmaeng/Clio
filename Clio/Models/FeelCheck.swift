@@ -15,6 +15,9 @@ final class FeelCheck {
     // MARK: - Body Sensations
     var bodySensations: [String]
 
+    // MARK: - Primary State (Single selection - how are you feeling overall?)
+    var primaryState: String?
+
     // MARK: - Optional Notes
     var notes: String?
 
@@ -30,6 +33,7 @@ final class FeelCheck {
         energyLevel: Int = 5,
         moods: [String] = [],
         bodySensations: [String] = [],
+        primaryState: String? = nil,
         notes: String? = nil,
         cyclePhase: String? = nil,
         cycleDay: Int? = nil,
@@ -40,6 +44,7 @@ final class FeelCheck {
         self.energyLevel = energyLevel
         self.moods = moods
         self.bodySensations = bodySensations
+        self.primaryState = primaryState
         self.notes = notes
         self.cyclePhase = cyclePhase
         self.cycleDay = cycleDay
@@ -124,6 +129,44 @@ final class FeelCheck {
             switch self {
             case .energized, .rested, .strong, .light: return true
             case .tired, .heavy, .crampy, .bloated, .headachy, .tense, .achy: return false
+            }
+        }
+    }
+
+    // MARK: - Primary State Options (10 options - single selection required)
+    enum PrimaryState: String, CaseIterable, Identifiable {
+        case energized = "Energized"
+        case calm = "Calm"
+        case foggy = "Foggy"
+        case rested = "Rested"
+        case heavy = "Heavy"
+        case anxious = "Anxious"
+        case sore = "Sore"
+        case balanced = "Balanced"
+        case low = "Low"
+        case neutral = "Neutral"
+
+        var id: String { rawValue }
+
+        var icon: String {
+            switch self {
+            case .energized: return "bolt"
+            case .calm: return "leaf"
+            case .foggy: return "cloud.fog"
+            case .rested: return "bed.double"
+            case .heavy: return "arrow.down.circle"
+            case .anxious: return "waveform"
+            case .sore: return "staroflife"
+            case .balanced: return "scale.3d"
+            case .low: return "battery.25"
+            case .neutral: return "minus"
+            }
+        }
+
+        var isPositive: Bool {
+            switch self {
+            case .energized, .calm, .rested, .balanced, .neutral: return true
+            case .foggy, .heavy, .anxious, .sore, .low: return false
             }
         }
     }

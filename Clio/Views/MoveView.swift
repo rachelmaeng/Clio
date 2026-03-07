@@ -1,14 +1,19 @@
 import SwiftUI
 import SwiftData
 
+// Wrapper for sheet presentation to capture preselected type correctly
+struct AddMovementSheetItem: Identifiable {
+    let id = UUID()
+    let preselectedType: MovementEntry.MovementType?
+    let preselectedCategory: MovementEntry.MovementCategory?
+}
+
 struct MoveView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \UserSettings.createdAt, order: .reverse) private var settings: [UserSettings]
     @Query(sort: \MovementEntry.dateTime, order: .reverse) private var movements: [MovementEntry]
 
-    @State private var showAddMovement = false
-    @State private var selectedTip: PhaseTip?
-    @State private var selectedMovementType: MovementEntry.MovementType?
+    @State private var addMovementSheet: AddMovementSheetItem? = nil
     @State private var selectedCategory: MovementEntry.MovementCategory?
 
     private var userSettings: UserSettings? {
@@ -35,63 +40,67 @@ struct MoveView: View {
     var body: some View {
         NavigationStack {
             ZStack {
+                // Background layer to prevent white flash
                 ClioTheme.background
+                    .withGrain(opacity: 0.025)
                     .ignoresSafeArea()
 
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 24) {
+                    VStack(alignment: .leading, spacing: ClioTheme.spacingLarge) {
                         // Hero illustration - full width
+                        // No fadeInFromBottom on hero to prevent white flash
                         moveHero
                             .padding(.horizontal, -ClioTheme.spacing)
-                            .fadeInFromBottom(delay: 0)
 
                         // Header with phase context
                         phaseHeader
                             .fadeInFromBottom(delay: 0.05)
 
-                        // Today's Log Section
+                        // Category Tiles (2x3 grid) - primary logging method
+                        categoryGrid
+                            .fadeInFromBottom(delay: 0.1)
+
+                        // Today's Log Section (only if movements exist)
                         if !todayMovements.isEmpty {
                             todayLogSection
-                                .fadeInFromBottom(delay: 0.1)
+                                .fadeInFromBottom(delay: 0.15)
                         }
-
-                        // Category Tiles (2x3 grid)
-                        categoryGrid
-                            .fadeInFromBottom(delay: 0.2)
                     }
                     .padding(.horizontal, ClioTheme.spacing)
                     .padding(.bottom, 100)
                 }
+                .scrollContentBackground(.hidden)
                 .ignoresSafeArea(edges: .top)
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showAddMovement = true
-                    } label: {
-                        Image(systemName: "plus")
-                            .font(.title3.weight(.semibold))
-                            .foregroundStyle(ClioTheme.moveColor)
+
+                // Custom add button overlay
+                VStack {
+                    HStack {
+                        Spacer()
+                        Button {
+                            addMovementSheet = AddMovementSheetItem(preselectedType: nil, preselectedCategory: nil)
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.title3.weight(.semibold))
+                                .foregroundStyle(ClioTheme.moveColor)
+                                .frame(width: 44, height: 44)
+                                .background(ClioTheme.surface.opacity(0.9))
+                                .clipShape(Circle())
+                        }
+                        .padding(.trailing, ClioTheme.spacing)
                     }
+                    .padding(.top, 60)
+                    Spacer()
                 }
             }
-            .sheet(isPresented: $showAddMovement) {
-                AddMovementView()
-            }
-            .sheet(item: $selectedTip) { tip in
-                MovementTipDetailSheet(tip: tip, onLog: {
-                    logFromTip(tip)
-                })
-            }
-            .sheet(item: $selectedMovementType) { type in
-                AddMovementView(preselectedType: type)
+            .navigationBarTitleDisplayMode(.inline)
+            .sheet(item: $addMovementSheet) { item in
+                AddMovementView(preselectedType: item.preselectedType, preselectedCategory: item.preselectedCategory)
             }
             .sheet(item: $selectedCategory) { category in
                 CategorySubtypesSheet(category: category) { type in
                     selectedCategory = nil
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        selectedMovementType = type
+                        addMovementSheet = AddMovementSheetItem(preselectedType: type, preselectedCategory: nil)
                     }
                 }
             }
@@ -101,10 +110,16 @@ struct MoveView: View {
     // MARK: - Move Hero Illustration
     private var moveHero: some View {
         ZStack(alignment: .bottomLeading) {
-            // Full illustration - extends to top edge
+            // Solid background to prevent any flash
+            ClioTheme.background
+                .frame(height: 360)
+
+            // Full illustration - aligned to BOTTOM to show person
             loadBundleImage("hiking-ovulation")
                 .resizable()
-                .aspectRatio(contentMode: .fit)
+                .scaledToFill()
+                .frame(height: 360, alignment: .bottom)
+                .clipped()
                 .overlay(
                     GrainTexture(opacity: 0.05)
                         .blendMode(.overlay)
@@ -185,27 +200,7 @@ struct MoveView: View {
                 Text(currentPhase.description)
                     .font(.subheadline)
                     .foregroundStyle(ClioTheme.textMuted)
-
-                Text("·")
-                    .foregroundStyle(ClioTheme.textMuted)
-
-                Text(phaseMovementContext)
-                    .font(.caption)
-                    .foregroundStyle(ClioTheme.textMuted)
             }
-        }
-    }
-
-    private var phaseMovementContext: String {
-        switch currentPhase {
-        case .menstrual:
-            return "Gentle movement"
-        case .follicular:
-            return "Try new challenges"
-        case .ovulation:
-            return "Peak energy"
-        case .luteal:
-            return "Moderate intensity"
         }
     }
 
@@ -228,7 +223,7 @@ struct MoveView: View {
                 ForEach(todayMovements.prefix(5), id: \.id) { movement in
                     MovementLogRow(
                         movement: movement,
-                        showCalories: userSettings?.showCalorieBurnEstimate ?? true,
+                        showCalories: userSettings?.showCalorieBurnEstimate ?? false,
                         onDelete: { deleteMovement(movement) }
                     )
                     .padding(.vertical, 8)
@@ -253,9 +248,15 @@ struct MoveView: View {
     // MARK: - Category Grid
     private var categoryGrid: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Log a workout")
-                .font(ClioTheme.subheadingFont())
-                .foregroundStyle(ClioTheme.text)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Quick log by type")
+                    .font(.headline)
+                    .foregroundStyle(ClioTheme.text)
+
+                Text("Tap any to start logging")
+                    .font(.caption)
+                    .foregroundStyle(ClioTheme.textMuted)
+            }
 
             LazyVGrid(columns: [
                 GridItem(.flexible(), spacing: 12),
@@ -272,32 +273,15 @@ struct MoveView: View {
 
     private func handleCategoryTap(_ category: MovementEntry.MovementCategory) {
         let types = category.movementTypes
-        if types.count == 1 {
-            // Go directly to AddMovementView
-            selectedMovementType = types.first
+        if types.count == 1, let type = types.first {
+            // Go directly to AddMovementView with type pre-selected
+            addMovementSheet = AddMovementSheetItem(preselectedType: type, preselectedCategory: category)
         } else {
             // Show subtypes sheet
             selectedCategory = category
         }
     }
 
-    // MARK: - Log from Tip
-    private func logFromTip(_ tip: PhaseTip) {
-        showAddMovement = true
-        selectedTip = nil
-    }
-
-    private func quickLogMovement(_ type: MovementEntry.MovementType) {
-        let movement = MovementEntry(type: type.rawValue)
-
-        if let phase = userSettings?.currentPhase,
-           let day = userSettings?.dayOfCycle {
-            movement.setCycleContext(phase: phase, day: day)
-        }
-
-        modelContext.insert(movement)
-        try? modelContext.save()
-    }
 }
 
 // MARK: - Category Tile

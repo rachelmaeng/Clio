@@ -14,7 +14,11 @@ struct SettingsView: View {
     @State private var showFertilitySettings = false
     @State private var showExportSheet = false
     @State private var showClearConfirmation = false
+    @State private var showClearSampleConfirmation = false
+    @State private var showSampleDataLoaded = false
     @State private var exportURL: URL?
+    @State private var showErrorAlert = false
+    @State private var errorMessage = ""
 
     private var settings: UserSettings? {
         userSettings.first
@@ -52,6 +56,12 @@ struct SettingsView: View {
                         aboutSection
                             .fadeInFromBottom(delay: 0.5)
 
+                        // Developer section (debug builds only)
+                        #if DEBUG
+                        developerSection
+                            .fadeInFromBottom(delay: 0.55)
+                        #endif
+
                         // Philosophy note
                         philosophyNote
                             .fadeInFromBottom(delay: 0.6)
@@ -88,6 +98,24 @@ struct SettingsView: View {
                 }
             } message: {
                 Text("This will permanently remove all your check-ins, movements, and meals. This action cannot be undone.")
+            }
+            .alert("Error", isPresented: $showErrorAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(errorMessage)
+            }
+            .alert("Clear All Data?", isPresented: $showClearSampleConfirmation) {
+                Button("Cancel", role: .cancel) { }
+                Button("Clear everything", role: .destructive) {
+                    SampleDataGenerator.clearAllSampleData(modelContext: modelContext)
+                }
+            } message: {
+                Text("This will remove all check-ins, meals, movements, and insights. This cannot be undone.")
+            }
+            .alert("Sample Data Loaded", isPresented: $showSampleDataLoaded) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text("2 weeks of realistic sample data has been added. Check the Home, Eat, and Move tabs to see it.")
             }
         }
     }
@@ -212,7 +240,7 @@ struct SettingsView: View {
                             .frame(width: 24)
 
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Calorie goals")
+                            Text("Calorie reference range")
                                 .font(.body)
                                 .foregroundStyle(ClioTheme.text)
 
@@ -221,7 +249,7 @@ struct SettingsView: View {
                                     .font(.caption)
                                     .foregroundStyle(ClioTheme.textMuted)
                             } else {
-                                Text("Optional - set a target range")
+                                Text("Optional - set a daily reference")
                                     .font(.caption)
                                     .foregroundStyle(ClioTheme.textMuted)
                             }
@@ -293,7 +321,7 @@ struct SettingsView: View {
                     title: "Show calories",
                     subtitle: "Display calorie details in meal logs",
                     isOn: Binding(
-                        get: { settings?.showCalories ?? true },
+                        get: { settings?.showCalories ?? false },
                         set: { updateSetting(\.showCalories, value: $0) }
                     )
                 )
@@ -306,7 +334,7 @@ struct SettingsView: View {
                     title: "Calorie burn estimates",
                     subtitle: "Show estimated calories burned for workouts",
                     isOn: Binding(
-                        get: { settings?.showCalorieBurnEstimate ?? true },
+                        get: { settings?.showCalorieBurnEstimate ?? false },
                         set: { updateSetting(\.showCalorieBurnEstimate, value: $0) }
                     )
                 )
@@ -410,6 +438,45 @@ struct SettingsView: View {
         }
     }
 
+    // MARK: - Developer Section
+    private var developerSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 6) {
+                Image(systemName: "hammer")
+                    .font(.caption)
+                    .foregroundStyle(ClioTheme.textMuted)
+                Text("Developer")
+                    .font(.headline)
+                    .foregroundStyle(ClioTheme.text)
+            }
+
+            VStack(spacing: 0) {
+                SettingsNavigationRow(
+                    icon: "square.and.arrow.down",
+                    title: "Load sample data",
+                    subtitle: "Add 2 weeks of realistic test data"
+                ) {
+                    SampleDataGenerator.loadSampleData(modelContext: modelContext)
+                    showSampleDataLoaded = true
+                }
+
+                Divider()
+                    .background(Color.white.opacity(0.05))
+
+                SettingsNavigationRow(
+                    icon: "trash",
+                    title: "Clear all data",
+                    subtitle: "Remove all entries and insights",
+                    isDestructive: true
+                ) {
+                    showClearSampleConfirmation = true
+                }
+            }
+            .background(ClioTheme.surface)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+        }
+    }
+
     // MARK: - Philosophy Note
     private var philosophyNote: some View {
         VStack(spacing: 12) {
@@ -448,7 +515,8 @@ struct SettingsView: View {
             exportURL = try exporter.getExportURL()
             showExportSheet = true
         } catch {
-            print("Export failed: \(error)")
+            errorMessage = "Export failed: \(error.localizedDescription)"
+            showErrorAlert = true
         }
     }
 
@@ -457,7 +525,8 @@ struct SettingsView: View {
         do {
             try exporter.clearAllData()
         } catch {
-            print("Clear failed: \(error)")
+            errorMessage = "Clear failed: \(error.localizedDescription)"
+            showErrorAlert = true
         }
     }
 
@@ -740,7 +809,7 @@ struct CalorieGoalSheet: View {
                     .padding(.bottom, 100)
                 }
             }
-            .navigationTitle("Calorie Goals")
+            .navigationTitle("Calorie Reference Range")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {

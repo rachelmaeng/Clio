@@ -198,36 +198,38 @@ final class MovementEntry {
         }
     }
 
-    // MARK: - Feel After Options
+    // MARK: - Feel After Options (9 options for movement feedback)
     enum FeelAfter: String, CaseIterable, Identifiable {
         case energized = "Energized"
-        case calm = "Calm"
         case strong = "Strong"
-        case accomplished = "Accomplished"
-        case relaxed = "Relaxed"
+        case calm = "Calm"
         case tired = "Tired"
         case sore = "Sore"
+        case accomplished = "Accomplished"
+        case drained = "Drained"
         case refreshed = "Refreshed"
+        case neutral = "Neutral"
 
         var id: String { rawValue }
 
         var icon: String {
             switch self {
             case .energized: return "bolt"
-            case .calm: return "leaf"
             case .strong: return "dumbbell"
-            case .accomplished: return "checkmark"
-            case .relaxed: return "wind"
+            case .calm: return "leaf"
             case .tired: return "moon.zzz"
             case .sore: return "staroflife"
-            case .refreshed: return "sparkle"
+            case .accomplished: return "checkmark.seal"
+            case .drained: return "battery.0"
+            case .refreshed: return "arrow.counterclockwise"
+            case .neutral: return "minus"
             }
         }
 
         var isPositive: Bool {
             switch self {
-            case .energized, .calm, .strong, .accomplished, .relaxed, .refreshed: return true
-            case .tired, .sore: return false
+            case .energized, .strong, .calm, .accomplished, .refreshed, .neutral: return true
+            case .tired, .sore, .drained: return false
             }
         }
     }

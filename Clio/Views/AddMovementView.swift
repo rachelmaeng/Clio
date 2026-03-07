@@ -541,12 +541,15 @@ private struct MovementConfigurationStep: View {
     let selectedType: MovementEntry.MovementType
     let customName: String
     let showCalories: Bool
+    let phase: CyclePhase
+    let showPhaseContext: Bool
     let onBack: () -> Void
 
     @Binding var duration: Double
     @Binding var intensity: WorkoutIntensity
     @Binding var selectedFeelAfter: Set<MovementEntry.FeelAfter>
     @Binding var notes: String
+    @Binding var phaseContextExpanded: Bool
 
     private var displayName: String {
         if selectedType == .custom && !customName.isEmpty {
@@ -555,12 +558,31 @@ private struct MovementConfigurationStep: View {
         return selectedType.rawValue
     }
 
+    private var phaseContextMessage: String {
+        switch phase {
+        case .menstrual:
+            return "Gentle movement and stretching tend to feel supportive during this phase. Listen to your body and honor what feels good."
+        case .follicular:
+            return "Rising energy makes this a great time to try new activities or push a bit harder. Your body is ready for challenges!"
+        case .ovulation:
+            return "Peak energy and strength! This is an ideal time for high-intensity workouts and personal bests."
+        case .luteal:
+            return "Moderate intensity works best as energy gradually shifts. Focus on consistency over intensity."
+        }
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: ClioTheme.spacingLarge) {
                 // Header with back and selected type
                 header
                     .fadeInFromBottom(delay: 0)
+
+                // Phase context card (collapsible) - only show when pre-selected
+                if showPhaseContext {
+                    phaseContextCard
+                        .fadeInFromBottom(delay: 0.05)
+                }
 
                 // Config panel
                 WorkoutConfigPanel(
@@ -582,6 +604,48 @@ private struct MovementConfigurationStep: View {
             .padding(ClioTheme.spacing)
             .padding(.bottom, 140)
         }
+    }
+
+    private var phaseContextCard: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Button {
+                withAnimation(.clioSpring) {
+                    phaseContextExpanded.toggle()
+                }
+            } label: {
+                HStack(spacing: 10) {
+                    Circle()
+                        .fill(ClioTheme.phaseColor(for: phase))
+                        .frame(width: 8, height: 8)
+
+                    Text("Why \(displayName.lowercased()) in \(phase.description.lowercased())?")
+                        .font(ClioTheme.captionFont(13))
+                        .foregroundStyle(ClioTheme.text)
+
+                    Spacer()
+
+                    Image(systemName: phaseContextExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(ClioTheme.textMuted)
+                }
+                .padding(ClioTheme.spacing)
+            }
+            .buttonStyle(.plain)
+
+            if phaseContextExpanded {
+                VStack(alignment: .leading, spacing: ClioTheme.spacingSmall) {
+                    Text(phaseContextMessage)
+                        .font(ClioTheme.captionFont(13))
+                        .foregroundStyle(ClioTheme.textMuted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(.horizontal, ClioTheme.spacing)
+                .padding(.bottom, ClioTheme.spacing)
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
+        .background(ClioTheme.surface)
+        .clipShape(RoundedRectangle(cornerRadius: ClioTheme.cornerRadius, style: .continuous))
     }
 
     private var header: some View {
@@ -685,6 +749,7 @@ struct AddMovementView: View {
 
     var forDate: Date?
     var preselectedType: MovementEntry.MovementType?
+    var preselectedCategory: MovementEntry.MovementCategory?
 
     @State private var currentStep: LoggingStep = .selectType
     @State private var selectedType: MovementEntry.MovementType?
@@ -693,6 +758,7 @@ struct AddMovementView: View {
     @State private var intensity: WorkoutIntensity = .moderate
     @State private var selectedFeelAfter: Set<MovementEntry.FeelAfter> = []
     @State private var notes: String = ""
+    @State private var phaseContextExpanded: Bool = false
 
     private var userSettings: UserSettings? {
         settings.first
@@ -748,11 +814,14 @@ struct AddMovementView: View {
                                 selectedType: type,
                                 customName: customWorkoutName,
                                 showCalories: userSettings?.showCalorieBurnEstimate == true,
+                                phase: phaseForTargetDate,
+                                showPhaseContext: preselectedType != nil,
                                 onBack: { goBackToSelection() },
                                 duration: $durationMinutes,
                                 intensity: $intensity,
                                 selectedFeelAfter: $selectedFeelAfter,
-                                notes: $notes
+                                notes: $notes,
+                                phaseContextExpanded: $phaseContextExpanded
                             )
                             .transition(.asymmetric(
                                 insertion: .move(edge: .trailing).combined(with: .opacity),

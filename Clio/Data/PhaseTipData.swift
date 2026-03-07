@@ -108,7 +108,7 @@ struct PhaseTipDatabase {
         PhaseTip(
             id: "menstrual_lentils",
             name: "Lentils",
-            icon: "oval.fill",
+            icon: "circle.grid.2x2.fill",
             category: .eat,
             phase: .menstrual,
             whyBenefits: [
@@ -193,7 +193,7 @@ struct PhaseTipDatabase {
         PhaseTip(
             id: "menstrual_oatmeal",
             name: "Oatmeal",
-            icon: "oval.fill",
+            icon: "circle.grid.3x3.fill",
             category: .eat,
             phase: .menstrual,
             whyBenefits: [
@@ -227,7 +227,7 @@ struct PhaseTipDatabase {
         PhaseTip(
             id: "menstrual_chickpeas",
             name: "Chickpeas",
-            icon: "oval.fill",
+            icon: "circle.grid.2x2.fill",
             category: .eat,
             phase: .menstrual,
             whyBenefits: [
@@ -404,7 +404,7 @@ struct PhaseTipDatabase {
         PhaseTip(
             id: "follicular_citrus",
             name: "Citrus fruits",
-            icon: "oval.fill",
+            icon: "circle.fill",
             category: .eat,
             phase: .follicular,
             whyBenefits: [
@@ -455,7 +455,7 @@ struct PhaseTipDatabase {
         PhaseTip(
             id: "follicular_chicken",
             name: "Chicken",
-            icon: "fork.knife",
+            icon: "bird.fill",
             category: .eat,
             phase: .follicular,
             whyBenefits: [
@@ -472,7 +472,7 @@ struct PhaseTipDatabase {
         PhaseTip(
             id: "follicular_quinoa",
             name: "Quinoa",
-            icon: "oval.fill",
+            icon: "circle.grid.3x3.fill",
             category: .eat,
             phase: .follicular,
             whyBenefits: [
@@ -506,7 +506,7 @@ struct PhaseTipDatabase {
         PhaseTip(
             id: "follicular_berries",
             name: "Fresh berries",
-            icon: "oval.fill",
+            icon: "heart.fill",
             category: .eat,
             phase: .follicular,
             whyBenefits: [
@@ -591,7 +591,7 @@ struct PhaseTipDatabase {
         PhaseTip(
             id: "follicular_lentils",
             name: "Lentils",
-            icon: "oval.fill",
+            icon: "circle.grid.2x2.fill",
             category: .eat,
             phase: .follicular,
             whyBenefits: [
@@ -642,20 +642,20 @@ struct PhaseTipDatabase {
             ]
         ),
         PhaseTip(
-            id: "follicular_newworkouts",
-            name: "Try something new",
-            icon: "star.fill",
+            id: "follicular_dance",
+            name: "Dance cardio",
+            icon: "figure.dance",
             category: .move,
             phase: .follicular,
             whyBenefits: [
-                "Brain is primed for learning",
-                "Rising energy supports challenges",
-                "Good time for new skills"
+                "Rising energy makes movement fun",
+                "Boosts mood and creativity",
+                "Great cardio without feeling like exercise"
             ],
             howToEnjoy: [
-                "Take a new class",
-                "Try a different workout style",
-                "Learn new movements"
+                "Join a Zumba or dance class",
+                "Follow along to dance videos",
+                "Put on music and move freely"
             ]
         ),
         PhaseTip(
@@ -751,7 +751,7 @@ struct PhaseTipDatabase {
         PhaseTip(
             id: "ovulation_wholegrains",
             name: "Whole grains",
-            icon: "oval.fill",
+            icon: "circle.grid.3x3.fill",
             category: .eat,
             phase: .ovulation,
             whyBenefits: [
@@ -870,7 +870,7 @@ struct PhaseTipDatabase {
         PhaseTip(
             id: "ovulation_quinoa",
             name: "Quinoa",
-            icon: "oval.fill",
+            icon: "circle.grid.3x3.fill",
             category: .eat,
             phase: .ovulation,
             whyBenefits: [
@@ -887,7 +887,7 @@ struct PhaseTipDatabase {
         PhaseTip(
             id: "ovulation_citrus",
             name: "Citrus fruits",
-            icon: "oval.fill",
+            icon: "circle.fill",
             category: .eat,
             phase: .ovulation,
             whyBenefits: [
@@ -1081,7 +1081,7 @@ struct PhaseTipDatabase {
         PhaseTip(
             id: "luteal_complexpcarbs",
             name: "Complex carbs",
-            icon: "oval.fill",
+            icon: "circle.grid.3x3.fill",
             category: .eat,
             phase: .luteal,
             whyBenefits: [
@@ -1115,7 +1115,7 @@ struct PhaseTipDatabase {
         PhaseTip(
             id: "luteal_turkey",
             name: "Turkey",
-            icon: "fork.knife",
+            icon: "bird.fill",
             category: .eat,
             phase: .luteal,
             whyBenefits: [
@@ -1183,7 +1183,7 @@ struct PhaseTipDatabase {
         PhaseTip(
             id: "luteal_oats",
             name: "Oats",
-            icon: "oval.fill",
+            icon: "circle.grid.3x3.fill",
             category: .eat,
             phase: .luteal,
             whyBenefits: [
@@ -1251,7 +1251,7 @@ struct PhaseTipDatabase {
         PhaseTip(
             id: "luteal_chickpeas",
             name: "Chickpeas",
-            icon: "oval.fill",
+            icon: "circle.grid.2x2.fill",
             category: .eat,
             phase: .luteal,
             whyBenefits: [

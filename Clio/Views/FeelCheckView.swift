@@ -9,10 +9,16 @@ struct FeelCheckView: View {
     // Optional date for logging past days
     var forDate: Date?
 
-    @State private var energyLevel: Double = 5
+    @State private var selectedPrimaryState: FeelCheck.PrimaryState? = nil
     @State private var selectedMoods: Set<FeelCheck.Mood> = []
     @State private var selectedSensations: Set<FeelCheck.BodySensation> = []
     @State private var notes: String = ""
+    @State private var isMoodExpanded: Bool = false
+    @State private var isSensationsExpanded: Bool = false
+    @State private var isNotesExpanded: Bool = false
+
+    // Simplified mood options (6 only)
+    private let simplifiedMoods: [FeelCheck.Mood] = [.calm, .happy, .hopeful, .anxious, .irritable, .sad]
 
     private var userSettings: UserSettings? {
         settings.first
@@ -42,31 +48,30 @@ struct FeelCheckView: View {
                 ClioTheme.background
                     .ignoresSafeArea()
 
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 32) {
-                        // Header
-                        header
-                            .fadeInFromBottom(delay: 0)
+                VStack(alignment: .leading, spacing: 20) {
+                    // Header
+                    header
+                        .fadeInFromBottom(delay: 0)
 
-                        // Energy Slider
-                        energySection
-                            .fadeInFromBottom(delay: 0.1)
+                    // Primary State (Required - single selection)
+                    primaryStateSection
+                        .fadeInFromBottom(delay: 0.1)
 
-                        // Mood Selection
-                        moodSection
-                            .fadeInFromBottom(delay: 0.2)
+                    // Collapsed Mood Section
+                    moodSection
+                        .fadeInFromBottom(delay: 0.2)
 
-                        // Body Sensations
-                        sensationsSection
-                            .fadeInFromBottom(delay: 0.3)
+                    // Collapsed Body Sensations Section
+                    sensationsSection
+                        .fadeInFromBottom(delay: 0.3)
 
-                        // Notes
-                        notesSection
-                            .fadeInFromBottom(delay: 0.4)
-                    }
-                    .padding()
-                    .padding(.bottom, 160)
+                    // Collapsed Notes Section
+                    notesSection
+                        .fadeInFromBottom(delay: 0.4)
+
+                    Spacer()
                 }
+                .padding()
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -83,169 +88,107 @@ struct FeelCheckView: View {
     // MARK: - Header
     private var header: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(isLoggingPastDay ? "How did you feel?" : "How do you feel?")
-                .font(.largeTitle)
+            Text("How are you feeling?")
+                .font(.title2)
                 .fontWeight(.bold)
                 .foregroundStyle(ClioTheme.text)
 
-            if isLoggingPastDay {
-                Text(pastDateFormatter.string(from: targetDate))
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundStyle(ClioTheme.primary)
-            }
-
-            HStack(spacing: 6) {
-                Circle()
-                    .fill(ClioTheme.phaseColor(for: phaseForTargetDate))
-                    .frame(width: 8, height: 8)
-
-                Text(phaseForTargetDate.description)
-                    .font(.subheadline)
-                    .foregroundStyle(ClioTheme.textMuted)
-
-                Text("· Day \(dayOfCycleForTargetDate)")
-                    .font(.subheadline)
-                    .foregroundStyle(ClioTheme.textMuted)
-            }
+            Text(dateFormatter.string(from: targetDate))
+                .font(.subheadline)
+                .foregroundStyle(ClioTheme.textMuted)
         }
     }
 
-    private var pastDateFormatter: DateFormatter {
+    private var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
-        formatter.dateFormat = "EEEE, MMMM d"
+        formatter.dateFormat = isLoggingPastDay ? "EEEE, MMMM d" : "EEEE, MMMM d"
         return formatter
     }
 
-    // MARK: - Energy Section
-    private var energySection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Text("Energy")
-                    .font(.headline)
-                    .foregroundStyle(ClioTheme.text)
-
-                Spacer()
-
-                Text(energyLabel)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundStyle(energyColor)
-            }
-
-            VStack(spacing: 12) {
-                Slider(value: $energyLevel, in: 1...10, step: 1)
-                    .tint(energyColor)
-
-                // Labels
-                HStack {
-                    Text("Depleted")
-                        .font(.caption)
-                        .foregroundStyle(ClioTheme.textMuted)
-                    Spacer()
-                    Text("Vibrant")
-                        .font(.caption)
-                        .foregroundStyle(ClioTheme.textMuted)
-                }
-            }
-            .padding()
-            .background(ClioTheme.surface)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-        }
-    }
-
-    private var energyLabel: String {
-        switch Int(energyLevel) {
-        case 1...3: return "Low"
-        case 4...6: return "Moderate"
-        case 7...10: return "High"
-        default: return "Moderate"
-        }
-    }
-
-    private var energyColor: Color {
-        switch Int(energyLevel) {
-        case 1...3: return ClioTheme.honey
-        case 4...6: return ClioTheme.terracotta
-        case 7...10: return ClioTheme.success
-        default: return ClioTheme.terracotta
-        }
-    }
-
-    // MARK: - Mood Section (Primary - more prominent)
-    private var moodSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(spacing: 8) {
-                Image(systemName: "heart.circle.fill")
-                    .font(.system(size: 18))
-                    .foregroundStyle(ClioTheme.feelColor)
-                Text("How's your mood?")
-                    .font(ClioTheme.subheadingFont(18))
-                    .foregroundStyle(ClioTheme.text)
-            }
-
-            // Use 3 columns for better balance (11 items = 3+3+3+2)
+    // MARK: - Primary State Section (Required - single selection)
+    private var primaryStateSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // 3-column grid for primary states (plus extra row for 10th)
             LazyVGrid(columns: [
-                GridItem(.flexible(), spacing: 10),
-                GridItem(.flexible(), spacing: 10),
-                GridItem(.flexible(), spacing: 10)
-            ], spacing: 10) {
-                ForEach(FeelCheck.Mood.allCases) { mood in
-                    MoodTile(
-                        mood: mood,
-                        isSelected: selectedMoods.contains(mood)
+                GridItem(.flexible(), spacing: 8),
+                GridItem(.flexible(), spacing: 8),
+                GridItem(.flexible(), spacing: 8)
+            ], spacing: 8) {
+                ForEach(FeelCheck.PrimaryState.allCases) { state in
+                    PrimaryStateChip(
+                        state: state,
+                        isSelected: selectedPrimaryState == state
                     ) {
-                        toggleMood(mood)
+                        selectPrimaryState(state)
                     }
                 }
             }
         }
-        .padding(ClioTheme.spacing)
-        .background(ClioTheme.surface)
-        .clipShape(RoundedRectangle(cornerRadius: ClioTheme.cornerRadius, style: .continuous))
     }
 
-    private func toggleMood(_ mood: FeelCheck.Mood) {
+    private func selectPrimaryState(_ state: FeelCheck.PrimaryState) {
         withAnimation(.clioQuick) {
-            if selectedMoods.contains(mood) {
-                selectedMoods.remove(mood)
+            if selectedPrimaryState == state {
+                selectedPrimaryState = nil
             } else {
-                selectedMoods.insert(mood)
+                selectedPrimaryState = state
             }
         }
     }
 
-    // MARK: - Sensations Section (Same grid style as Mood)
+    // MARK: - Body Sensations Section (Collapsible - optional)
     private var sensationsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(spacing: 8) {
-                Image(systemName: "figure.stand")
-                    .font(.system(size: 16))
-                    .foregroundStyle(ClioTheme.textMuted)
-                Text("How does your body feel?")
-                    .font(ClioTheme.captionFont(14))
-                    .foregroundStyle(ClioTheme.textMuted)
-            }
+        VStack(alignment: .leading, spacing: 12) {
+            // Expand/collapse button
+            Button {
+                withAnimation(.clioQuick) {
+                    isSensationsExpanded.toggle()
+                }
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: isSensationsExpanded ? "chevron.down" : "plus")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(ClioTheme.textMuted)
 
-            // Same 3-column grid as Mood for consistency
-            LazyVGrid(columns: [
-                GridItem(.flexible(), spacing: 10),
-                GridItem(.flexible(), spacing: 10),
-                GridItem(.flexible(), spacing: 10)
-            ], spacing: 10) {
-                ForEach(FeelCheck.BodySensation.allCases) { sensation in
-                    BodyTile(
-                        sensation: sensation,
-                        isSelected: selectedSensations.contains(sensation)
-                    ) {
-                        toggleSensation(sensation)
+                    Text("Body sensations")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundStyle(ClioTheme.textMuted)
+
+                    if !selectedSensations.isEmpty && !isSensationsExpanded {
+                        Text("(\(selectedSensations.count) selected)")
+                            .font(.caption)
+                            .foregroundStyle(ClioTheme.feelColor)
+                    }
+
+                    Spacer()
+                }
+                .padding(.vertical, 12)
+                .padding(.horizontal, 16)
+                .background(ClioTheme.surface)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+            .buttonStyle(.plain)
+
+            // Expanded sensations options
+            if isSensationsExpanded {
+                LazyVGrid(columns: [
+                    GridItem(.flexible(), spacing: 8),
+                    GridItem(.flexible(), spacing: 8),
+                    GridItem(.flexible(), spacing: 8)
+                ], spacing: 8) {
+                    ForEach(FeelCheck.BodySensation.allCases) { sensation in
+                        BodyStateChip(
+                            sensation: sensation,
+                            isSelected: selectedSensations.contains(sensation)
+                        ) {
+                            toggleSensation(sensation)
+                        }
                     }
                 }
+                .padding(.top, 4)
             }
         }
-        .padding(ClioTheme.spacing)
-        .background(ClioTheme.surface)
-        .clipShape(RoundedRectangle(cornerRadius: ClioTheme.cornerRadius, style: .continuous))
     }
 
     private func toggleSensation(_ sensation: FeelCheck.BodySensation) {
@@ -258,29 +201,131 @@ struct FeelCheckView: View {
         }
     }
 
-    // MARK: - Notes Section
-    private var notesSection: some View {
+    // MARK: - Mood Section (Collapsible)
+    private var moodSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 6) {
-                Text("Notes")
-                    .font(ClioTheme.captionFont(14))
-                    .foregroundStyle(ClioTheme.textMuted)
-                Text("optional")
-                    .font(ClioTheme.captionFont(11))
-                    .foregroundStyle(ClioTheme.textLight)
-            }
+            // Expand/collapse button
+            Button {
+                withAnimation(.clioQuick) {
+                    isMoodExpanded.toggle()
+                }
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: isMoodExpanded ? "chevron.down" : "plus")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(ClioTheme.textMuted)
 
-            TextField("Anything else on your mind?", text: $notes, axis: .vertical)
-                .font(ClioTheme.bodyFont())
-                .lineLimit(3...6)
-                .padding()
+                    Text("How's your mood?")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundStyle(ClioTheme.textMuted)
+
+                    if !selectedMoods.isEmpty && !isMoodExpanded {
+                        Text("(\(selectedMoods.count) selected)")
+                            .font(.caption)
+                            .foregroundStyle(ClioTheme.feelColor)
+                    }
+
+                    Spacer()
+                }
+                .padding(.vertical, 12)
+                .padding(.horizontal, 16)
                 .background(ClioTheme.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(ClioTheme.surfaceHighlight, lineWidth: 1)
-                )
-                .foregroundStyle(ClioTheme.text)
+            }
+            .buttonStyle(.plain)
+
+            // Expanded mood options
+            if isMoodExpanded {
+                LazyVGrid(columns: [
+                    GridItem(.flexible(), spacing: 8),
+                    GridItem(.flexible(), spacing: 8),
+                    GridItem(.flexible(), spacing: 8)
+                ], spacing: 8) {
+                    ForEach(simplifiedMoods) { mood in
+                        MoodChip(
+                            mood: mood,
+                            isSelected: selectedMoods.contains(mood)
+                        ) {
+                            toggleMood(mood)
+                        }
+                    }
+                }
+                .padding(.top, 4)
+            }
+        }
+    }
+
+    private func toggleMood(_ mood: FeelCheck.Mood) {
+        withAnimation(.clioQuick) {
+            if selectedMoods.contains(mood) {
+                selectedMoods.remove(mood)
+            } else {
+                selectedMoods.insert(mood)
+            }
+        }
+    }
+
+    // MARK: - Notes Section (Collapsible)
+    private var notesSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            if !isNotesExpanded {
+                // Collapsed state
+                Button {
+                    withAnimation(.clioQuick) {
+                        isNotesExpanded = true
+                    }
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(ClioTheme.textMuted)
+
+                        Text("Add note")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundStyle(ClioTheme.textMuted)
+
+                        Spacer()
+                    }
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 16)
+                    .background(ClioTheme.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .buttonStyle(.plain)
+            } else {
+                // Expanded state
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("Note")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundStyle(ClioTheme.textMuted)
+
+                        Spacer()
+
+                        Button {
+                            withAnimation(.clioQuick) {
+                                isNotesExpanded = false
+                                notes = ""
+                            }
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.caption)
+                                .foregroundStyle(ClioTheme.textMuted)
+                        }
+                    }
+
+                    TextField("Anything else on your mind?", text: $notes, axis: .vertical)
+                        .font(ClioTheme.bodyFont())
+                        .lineLimit(2...4)
+                        .padding()
+                        .background(ClioTheme.surface)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .foregroundStyle(ClioTheme.text)
+                }
+            }
         }
     }
 
@@ -304,9 +349,10 @@ struct FeelCheckView: View {
 
     private func saveFeelCheck() {
         let feelCheck = FeelCheck(
-            energyLevel: Int(energyLevel),
+            energyLevel: 5, // Default value since we removed the slider
             moods: selectedMoods.map { $0.rawValue },
             bodySensations: selectedSensations.map { $0.rawValue },
+            primaryState: selectedPrimaryState?.rawValue,
             notes: notes.isEmpty ? nil : notes
         )
 
@@ -320,63 +366,105 @@ struct FeelCheckView: View {
     }
 }
 
-// MARK: - Mood Tile (Grid style)
-struct MoodTile: View {
-    let mood: FeelCheck.Mood
+// MARK: - Primary State Chip
+struct PrimaryStateChip: View {
+    let state: FeelCheck.PrimaryState
     let isSelected: Bool
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             VStack(spacing: 6) {
-                Image(systemName: mood.icon)
+                Image(systemName: state.icon)
                     .font(.system(size: 18, weight: .medium))
-                    .foregroundStyle(isSelected ? .white : ClioTheme.textMuted)
+                    .foregroundStyle(isSelected ? .white : ClioTheme.text)
 
-                Text(mood.rawValue)
-                    .font(ClioTheme.captionFont(11))
-                    .foregroundStyle(isSelected ? .white : ClioTheme.textMuted)
+                Text(state.rawValue)
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundStyle(isSelected ? .white : ClioTheme.text)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
-            .background(isSelected ? tileColor : ClioTheme.surfaceHighlight)
+            .background(isSelected ? tileColor : ClioTheme.surface)
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(isSelected ? Color.clear : ClioTheme.surfaceHighlight, lineWidth: 1)
+            )
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(state.rawValue)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .accessibilityHint("Double tap to \(isSelected ? "deselect" : "select")")
     }
 
     private var tileColor: Color {
-        mood.isPositive ? ClioTheme.feelColor : ClioTheme.terracotta
+        state.isPositive ? ClioTheme.feelColor : ClioTheme.terracotta
     }
 }
 
-// MARK: - Body Tile (Same grid style as Mood)
-struct BodyTile: View {
+// MARK: - Body State Chip
+struct BodyStateChip: View {
     let sensation: FeelCheck.BodySensation
     let isSelected: Bool
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 6) {
-                Image(systemName: sensation.icon)
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(isSelected ? .white : ClioTheme.textMuted)
-
-                Text(sensation.rawValue)
-                    .font(ClioTheme.captionFont(11))
-                    .foregroundStyle(isSelected ? .white : ClioTheme.textMuted)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(isSelected ? tileColor : ClioTheme.surfaceHighlight)
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            Text(sensation.rawValue)
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundStyle(isSelected ? .white : ClioTheme.text)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(isSelected ? tileColor : ClioTheme.surface)
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .stroke(isSelected ? Color.clear : ClioTheme.surfaceHighlight, lineWidth: 1)
+                )
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(sensation.rawValue)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .accessibilityHint("Double tap to \(isSelected ? "deselect" : "select")")
     }
 
     private var tileColor: Color {
         sensation.isPositive ? ClioTheme.success : ClioTheme.terracotta
+    }
+}
+
+// MARK: - Mood Chip
+struct MoodChip: View {
+    let mood: FeelCheck.Mood
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(mood.rawValue)
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundStyle(isSelected ? .white : ClioTheme.text)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(isSelected ? tileColor : ClioTheme.surface)
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .stroke(isSelected ? Color.clear : ClioTheme.surfaceHighlight, lineWidth: 1)
+                )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(mood.rawValue)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .accessibilityHint("Double tap to \(isSelected ? "deselect" : "select")")
+    }
+
+    private var tileColor: Color {
+        mood.isPositive ? ClioTheme.feelColor : ClioTheme.terracotta
     }
 }
 
