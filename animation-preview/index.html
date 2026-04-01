@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clio Animation Previews</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Georgia', serif;
+    background: #F3EFE9;
+    color: #3D3532;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+  }
+
+  h1 {
+    font-size: 28px;
+    margin-bottom: 10px;
+    color: #8A9A7D;
+  }
+
+  .subtitle {
+    color: #7D756F;
+    margin-bottom: 40px;
+    font-size: 14px;
+  }
+
+  .demo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 30px;
+    max-width: 1100px;
+    width: 100%;
+  }
+
+  .demo-card {
+    background: #FFFFFF;
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(61,53,50,0.06), 0 8px 20px rgba(61,53,50,0.03);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .demo-card h2 {
+    font-size: 16px;
+    color: #8A9A7D;
+    margin-bottom: 6px;
+  }
+
+  .demo-card p {
+    font-size: 12px;
+    color: #7D756F;
+    margin-bottom: 20px;
+  }
+
+  .demo-area {
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .replay-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: #8A9A7D;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 12px;
+    cursor: pointer;
+    z-index: 10;
+    font-family: -apple-system, sans-serif;
+  }
+
+  .replay-btn:hover { background: #7D8B75; }
+
+  /* ========== 1. SPLASH ANIMATION ========== */
+  .splash-container {
+    width: 260px;
+    height: 260px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle, #FAF8F5 0%, #F3EFE9 100%);
+    border-radius: 16px;
+    position: relative;
+  }
+
+  .splash-logo {
+    font-size: 52px;
+    font-weight: 600;
+    color: #8A9A7D;
+    opacity: 0;
+    transform: scale(0.6);
+    letter-spacing: 6px;
+  }
+
+  .splash-tagline {
+    font-size: 13px;
+    color: #A89E96;
+    opacity: 0;
+    transform: translateY(10px);
+    margin-top: 8px;
+  }
+
+  .splash-ring {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    border: 2px solid #8A9A7D;
+    border-radius: 50%;
+    opacity: 0;
+    transform: scale(0.3);
+  }
+
+  .splash-container.animate .splash-ring {
+    animation: ringExpand 1s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s forwards;
+  }
+
+  .splash-container.animate .splash-logo {
+    animation: logoIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s forwards;
+  }
+
+  .splash-container.animate .splash-tagline {
+    animation: fadeUp 0.6s ease-out 0.7s forwards;
+  }
+
+  @keyframes ringExpand {
+    0% { opacity: 0.8; transform: scale(0.3); }
+    60% { opacity: 0.3; }
+    100% { opacity: 0; transform: scale(1.8); }
+  }
+
+  @keyframes logoIn {
+    0% { opacity: 0; transform: scale(0.6); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes fadeUp {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ========== 2. SHIMMER / SKELETON ========== */
+  .skeleton-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .skeleton-card {
+    background: #F3EFE9;
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .skeleton-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #E8E0D6;
+    flex-shrink: 0;
+  }
+
+  .skeleton-lines {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .skeleton-line {
+    height: 12px;
+    border-radius: 6px;
+    background: #E8E0D6;
+  }
+
+  .skeleton-line.short { width: 60%; }
+  .skeleton-line.medium { width: 85%; }
+
+  .skeleton-card.shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(138, 154, 125, 0.06) 40%,
+      rgba(138, 154, 125, 0.12) 50%,
+      rgba(138, 154, 125, 0.06) 60%,
+      transparent
+    );
+    animation: shimmer 1.5s linear infinite;
+  }
+
+  .skeleton-card.shimmer.d1::after { animation-delay: 0s; }
+  .skeleton-card.shimmer.d2::after { animation-delay: 0.15s; }
+  .skeleton-card.shimmer.d3::after { animation-delay: 0.3s; }
+
+  /* Transition to real content */
+  .real-card {
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    opacity: 0;
+    transform: translateY(8px);
+    box-shadow: 0 2px 8px rgba(61,53,50,0.06);
+  }
+
+  .real-card.show {
+    animation: cardIn 0.4s ease-out forwards;
+  }
+
+  .real-card.show.r1 { animation-delay: 0s; }
+  .real-card.show.r2 { animation-delay: 0.08s; }
+  .real-card.show.r3 { animation-delay: 0.16s; }
+
+  .real-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .real-icon.eat { background: rgba(138, 154, 125, 0.15); }
+  .real-icon.move { background: rgba(125, 139, 117, 0.15); }
+  .real-icon.feel { background: rgba(224, 196, 184, 0.3); }
+
+  .real-text { font-size: 14px; color: #3D3532; }
+  .real-sub { font-size: 11px; color: #A89E96; margin-top: 2px; }
+
+  @keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+
+  @keyframes cardIn {
+    0% { opacity: 0; transform: translateY(8px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ========== 3. SHEET DISMISS CELEBRATION ========== */
+  .phone-frame {
+    width: 220px;
+    height: 460px;
+    background: #FAF8F5;
+    border-radius: 28px;
+    border: 2px solid #E8E0D6;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .phone-notch {
+    width: 80px;
+    height: 6px;
+    background: #E8E0D6;
+    border-radius: 3px;
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+  }
+
+  /* Background eat view (behind sheet) */
+  .bg-view {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    bottom: 210px;
+    padding: 20px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow: hidden;
+  }
+
+  .bg-header {
+    font-size: 11px;
+    color: #7D756F;
+    margin-top: 16px;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .bg-meal-row {
+    background: #FFFFFF;
+    border-radius: 8px;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+    color: #3D3532;
+    flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(61,53,50,0.04);
+  }
+
+  .bg-meal-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: #8A9A7D;
+    flex-shrink: 0;
+  }
+
+  .new-meal-row {
+    opacity: 0;
+    height: 0;
+    padding: 0 10px;
+    overflow: hidden;
+  }
+
+  .new-meal-row.appear {
+    animation: mealAppear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+
+  @keyframes mealAppear {
+    0% { opacity: 0; height: 0; padding: 0 10px; }
+    50% { height: 30px; padding: 8px 10px; }
+    100% { opacity: 1; height: 30px; padding: 8px 10px; }
+  }
+
+  /* Sheet overlay */
+  .sheet-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(61,53,50,0.25);
+    z-index: 5;
+    opacity: 1;
+    transition: opacity 0.35s ease;
+  }
+
+  .sheet-overlay.hidden { opacity: 0; pointer-events: none; }
+
+  /* The bottom sheet */
+  .sheet {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 210px;
+    background: #FFFFFF;
+    border-radius: 18px 18px 0 0;
+    z-index: 10;
+    padding: 10px 14px 16px;
+    display: flex;
+    flex-direction: column;
+    transform: translateY(0);
+    transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    box-shadow: 0 -4px 20px rgba(61,53,50,0.08);
+  }
+
+  .sheet.dismissed {
+    transform: translateY(100%);
+  }
+
+  .sheet-handle {
+    width: 36px; height: 4px;
+    background: #E8E0D6;
+    border-radius: 2px;
+    margin: 0 auto 8px;
+  }
+
+  .sheet-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #3D3532;
+  }
+
+  .sheet-field {
+    background: #F3EFE9;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 10px;
+    color: #A89E96;
+    margin-bottom: 5px;
+  }
+
+  .sheet-field.filled { color: #3D3532; }
+
+  .sheet-save-btn {
+    background: #8A9A7D;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 8px;
+    font-size: 12px;
+    font-family: 'Georgia', serif;
+    cursor: pointer;
+    margin-top: auto;
+    margin-bottom: 36px;
+    transition: transform 0.15s ease;
+    box-shadow: 0 4px 8px rgba(196,132,108,0.2);
+  }
+
+  .sheet-save-btn:hover { transform: scale(1.02); }
+  .sheet-save-btn:active { transform: scale(0.97); }
+
+  /* Celebration overlay (plays during dismiss) */
+  .celeb-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 15;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-top: 80px;
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  .celeb-overlay.show { opacity: 1; }
+
+  .celeb-check {
+    width: 52px; height: 52px;
+    opacity: 0;
+    transform: scale(0.2);
+  }
+
+  .celeb-overlay.show .celeb-check {
+    animation: cCheckBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s forwards;
+  }
+
+  .celeb-check-circle {
+    stroke: #8A9A7D;
+    stroke-width: 2.5;
+    fill: rgba(138, 154, 125, 0.1);
+    stroke-dasharray: 138;
+    stroke-dashoffset: 138;
+  }
+
+  .celeb-overlay.show .celeb-check-circle {
+    animation: cDrawCircle 0.4s ease-out 0.15s forwards;
+  }
+
+  .celeb-check-path {
+    stroke: #8A9A7D;
+    stroke-width: 3;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 30;
+    stroke-dashoffset: 30;
+  }
+
+  .celeb-overlay.show .celeb-check-path {
+    animation: cDrawCheck 0.3s ease-out 0.35s forwards;
+  }
+
+  .celeb-text {
+    font-size: 13px;
+    color: #3D3532;
+    margin-top: 8px;
+    opacity: 0;
+    font-weight: 500;
+  }
+
+  .celeb-overlay.show .celeb-text {
+    animation: fadeUp 0.4s ease-out 0.4s forwards;
+  }
+
+  @keyframes cCheckBounce {
+    0% { opacity: 0; transform: scale(0.2); }
+    50% { opacity: 1; transform: scale(1.15); }
+    70% { transform: scale(0.95); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes cDrawCircle { to { stroke-dashoffset: 0; } }
+  @keyframes cDrawCheck { to { stroke-dashoffset: 0; } }
+
+  /* ========== 4. BREATHING GLOW ========== */
+  .glow-card {
+    background: #FFFFFF;
+    border-radius: 24px;
+    padding: 20px;
+    width: 100%;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(61,53,50,0.06);
+  }
+
+  .glow-card.breathing {
+    animation: breatheGlow 2.5s ease-in-out infinite;
+  }
+
+  .glow-emoji { font-size: 28px; margin-bottom: 8px; }
+  .glow-title { font-size: 15px; margin-bottom: 4px; color: #3D3532; }
+  .glow-sub { font-size: 12px; color: #7D756F; }
+
+  @keyframes breatheGlow {
+    0%, 100% { box-shadow: 0 2px 8px rgba(61,53,50,0.06); }
+    50% { box-shadow: 0 0 20px rgba(138, 154, 125, 0.18), 0 0 40px rgba(138, 154, 125, 0.08), 0 2px 8px rgba(61,53,50,0.06); }
+  }
+
+  /* ========== 5. STAGGERED LIST ROWS ========== */
+  .stagger-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .stagger-row {
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    opacity: 0;
+    transform: translateY(16px);
+    box-shadow: 0 2px 8px rgba(61,53,50,0.06);
+  }
+
+  .stagger-row.animate {
+    animation: staggerIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+
+  .stagger-row.animate:nth-child(1) { animation-delay: 0s; }
+  .stagger-row.animate:nth-child(2) { animation-delay: 0.06s; }
+  .stagger-row.animate:nth-child(3) { animation-delay: 0.12s; }
+  .stagger-row.animate:nth-child(4) { animation-delay: 0.18s; }
+  .stagger-row.animate:nth-child(5) { animation-delay: 0.24s; }
+
+  .row-left { display: flex; align-items: center; gap: 10px; }
+  .row-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .row-name { font-size: 14px; color: #3D3532; }
+  .row-time { font-size: 11px; color: #A89E96; }
+
+  @keyframes staggerIn {
+    0% { opacity: 0; transform: translateY(16px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ========== 6. ANIMATED COUNTER ========== */
+  .counter-area {
+    text-align: center;
+  }
+
+  .counter-label {
+    font-size: 12px;
+    color: #7D756F;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  .counter-value {
+    font-size: 48px;
+    font-weight: 600;
+    color: #8A9A7D;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .counter-unit {
+    font-size: 16px;
+    color: #A89E96;
+    margin-left: 4px;
+  }
+
+  .counter-bar {
+    width: 200px;
+    height: 6px;
+    background: #E8E0D6;
+    border-radius: 3px;
+    margin-top: 12px;
+    overflow: hidden;
+  }
+
+  .counter-fill {
+    height: 100%;
+    background: #8A9A7D;
+    border-radius: 3px;
+    width: 0%;
+    transition: width 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+</style>
+</head>
+<body>
+
+<h1>Clio Animation Previews</h1>
+<p class="subtitle">Click "Replay" on each card to see the animation. These match your app's theme colors.</p>
+
+<div class="demo-grid">
+
+  <!-- 1. Splash Animation -->
+  <div class="demo-card">
+    <h2>1. Splash / Launch Animation</h2>
+    <p>Logo scales in with an expanding ring. First thing users see.</p>
+    <button class="replay-btn" onclick="replaySplash()">Replay</button>
+    <div class="demo-area">
+      <div class="splash-container" id="splash">
+        <div class="splash-ring"></div>
+        <div class="splash-logo">Clio</div>
+        <div class="splash-tagline">cycle-synced wellness</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Shimmer / Skeleton Loading -->
+  <div class="demo-card">
+    <h2>2. Shimmer Skeleton Loading</h2>
+    <p>Shows while meals/workouts load, then transitions to real content.</p>
+    <button class="replay-btn" onclick="replayShimmer()">Replay</button>
+    <div class="demo-area">
+      <div class="skeleton-list" id="shimmer-area">
+        <div class="skeleton-card shimmer d1">
+          <div class="skeleton-circle"></div>
+          <div class="skeleton-lines">
+            <div class="skeleton-line medium"></div>
+            <div class="skeleton-line short"></div>
+          </div>
+        </div>
+        <div class="skeleton-card shimmer d2">
+          <div class="skeleton-circle"></div>
+          <div class="skeleton-lines">
+            <div class="skeleton-line medium"></div>
+            <div class="skeleton-line short"></div>
+          </div>
+        </div>
+        <div class="skeleton-card shimmer d3">
+          <div class="skeleton-circle"></div>
+          <div class="skeleton-lines">
+            <div class="skeleton-line medium"></div>
+            <div class="skeleton-line short"></div>
+          </div>
+        </div>
+      </div>
+      <div class="skeleton-list" id="real-area" style="display:none;">
+        <div class="real-card r1">
+          <div class="real-icon eat">🥗</div>
+          <div><div class="real-text">Greek Salad</div><div class="real-sub">Lunch · 420 cal</div></div>
+        </div>
+        <div class="real-card r2">
+          <div class="real-icon move">🏃‍♀️</div>
+          <div><div class="real-text">Morning Pilates</div><div class="real-sub">Movement · 35 min</div></div>
+        </div>
+        <div class="real-card r3">
+          <div class="real-icon feel">✨</div>
+          <div><div class="real-text">Feeling energized</div><div class="real-sub">Check-in · Follicular phase</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Sheet Dismiss Celebration (Option C) -->
+  <div class="demo-card">
+    <h2>3. Save &amp; Dismiss Celebration</h2>
+    <p>User taps Save on the Add Meal sheet. Sheet slides down, checkmark + particles play, new meal appears in list.</p>
+    <button class="replay-btn" onclick="replaySheetCeleb()">Replay</button>
+    <div class="demo-area">
+      <div class="phone-frame" id="phoneFrame">
+        <div class="phone-notch"></div>
+
+        <!-- Background: Eat view with existing meals -->
+        <div class="bg-view">
+          <div class="bg-header">Today's Meals</div>
+          <div class="bg-meal-row">
+            <div class="bg-meal-dot"></div>
+            <span>Oatmeal with berries</span>
+          </div>
+          <div class="bg-meal-row">
+            <div class="bg-meal-dot"></div>
+            <span>Greek salad</span>
+          </div>
+          <div class="bg-meal-row">
+            <div class="bg-meal-dot"></div>
+            <span>Chicken wrap</span>
+          </div>
+          <div class="bg-meal-row new-meal-row" id="newMealRow">
+            <div class="bg-meal-dot" style="background:#8A9A7D"></div>
+            <span style="color:#8A9A7D">+ Salmon bowl</span>
+          </div>
+        </div>
+
+        <!-- Dark overlay -->
+        <div class="sheet-overlay" id="sheetOverlay"></div>
+
+        <!-- Add Meal sheet -->
+        <div class="sheet" id="mealSheet">
+          <div class="sheet-handle"></div>
+          <div class="sheet-title">Add Meal</div>
+          <div class="sheet-field filled">Salmon bowl</div>
+          <div class="sheet-field filled">Lunch &middot; 520 cal</div>
+          <div class="sheet-field">Felt good, energized</div>
+          <button class="sheet-save-btn" id="sheetSaveBtn" onclick="triggerSheetCeleb()">Save Meal</button>
+        </div>
+
+        <!-- Celebration overlay -->
+        <div class="celeb-overlay" id="celebOverlay">
+          <svg class="celeb-check" viewBox="0 0 52 52">
+            <circle class="celeb-check-circle" cx="26" cy="26" r="22"/>
+            <path class="celeb-check-path" d="M15 26 L22 33 L37 18"/>
+          </svg>
+          <div class="celeb-text">Meal saved!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Breathing Glow -->
+  <div class="demo-card">
+    <h2>4. Breathing Glow</h2>
+    <p>Subtle pulsing glow on insight cards or the Feel Check CTA. Always running.</p>
+    <button class="replay-btn" onclick="replayGlow()">Replay</button>
+    <div class="demo-area">
+      <div class="glow-card breathing" id="glowCard">
+        <div class="glow-emoji">🌙</div>
+        <div class="glow-title">New Insight</div>
+        <div class="glow-sub">You tend to sleep better during your luteal phase when you eat warm meals.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Staggered List Rows -->
+  <div class="demo-card">
+    <h2>5. Staggered List Entry</h2>
+    <p>Meal/workout rows cascade in one-by-one instead of appearing all at once.</p>
+    <button class="replay-btn" onclick="replayStagger()">Replay</button>
+    <div class="demo-area">
+      <div class="stagger-list" id="staggerList">
+        <div class="stagger-row animate">
+          <div class="row-left"><div class="row-dot" style="background:#8A9A7D"></div><span class="row-name">Oatmeal with berries</span></div>
+          <span class="row-time">8:30 AM</span>
+        </div>
+        <div class="stagger-row animate">
+          <div class="row-left"><div class="row-dot" style="background:#7D8B75"></div><span class="row-name">Morning walk</span></div>
+          <span class="row-time">9:15 AM</span>
+        </div>
+        <div class="stagger-row animate">
+          <div class="row-left"><div class="row-dot" style="background:#8A9A7D"></div><span class="row-name">Salmon & rice bowl</span></div>
+          <span class="row-time">12:30 PM</span>
+        </div>
+        <div class="stagger-row animate">
+          <div class="row-left"><div class="row-dot" style="background:#7D8B75"></div><span class="row-name">Pilates class</span></div>
+          <span class="row-time">5:00 PM</span>
+        </div>
+        <div class="stagger-row animate">
+          <div class="row-left"><div class="row-dot" style="background:#8A9A7D"></div><span class="row-name">Veggie stir fry</span></div>
+          <span class="row-time">7:30 PM</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Animated Counter -->
+  <div class="demo-card">
+    <h2>6. Animated Calorie Counter</h2>
+    <p>Numbers count up smoothly when the Eat view loads. Progress bar fills.</p>
+    <button class="replay-btn" onclick="replayCounter()">Replay</button>
+    <div class="demo-area">
+      <div class="counter-area">
+        <div class="counter-label">Today's Calories</div>
+        <div><span class="counter-value" id="counterVal">0</span><span class="counter-unit">/ 1,850</span></div>
+        <div class="counter-bar"><div class="counter-fill" id="counterFill"></div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // 1. Splash
+  function replaySplash() {
+    const el = document.getElementById('splash');
+    el.classList.remove('animate');
+    void el.offsetWidth;
+    el.classList.add('animate');
+  }
+  setTimeout(replaySplash, 500);
+
+  // 2. Shimmer → Real content
+  function replayShimmer() {
+    const shimmer = document.getElementById('shimmer-area');
+    const real = document.getElementById('real-area');
+    shimmer.style.display = 'flex';
+    real.style.display = 'none';
+    real.querySelectorAll('.real-card').forEach(c => c.classList.remove('show'));
+
+    setTimeout(() => {
+      shimmer.style.display = 'none';
+      real.style.display = 'flex';
+      real.querySelectorAll('.real-card').forEach(c => c.classList.add('show'));
+    }, 2000);
+  }
+  setTimeout(replayShimmer, 800);
+
+  // 3. Sheet Dismiss Celebration (Option C)
+  const particleColors = ['#8A9A7D', '#7D8B75', '#A8B89E', '#6B7F59', '#E0C4B8', '#B8939A'];
+  let sheetAnimating = false;
+
+  function triggerSheetCeleb() {
+    if (sheetAnimating) return;
+    sheetAnimating = true;
+
+    const sheet = document.getElementById('mealSheet');
+    const overlay = document.getElementById('sheetOverlay');
+    const celeb = document.getElementById('celebOverlay');
+    const phone = document.getElementById('phoneFrame');
+    const newRow = document.getElementById('newMealRow');
+
+    sheet.classList.add('dismissed');
+    overlay.classList.add('hidden');
+
+    setTimeout(() => {
+      celeb.classList.add('show');
+      spawnParticlesInPhone(phone);
+    }, 200);
+
+    setTimeout(() => {
+      newRow.classList.add('appear');
+    }, 900);
+
+    setTimeout(() => {
+      celeb.style.transition = 'opacity 0.4s ease';
+      celeb.style.opacity = '0';
+    }, 1400);
+  }
+
+  function spawnParticlesInPhone(container) {
+    const cx = container.offsetWidth / 2;
+    const cy = container.offsetHeight / 2 + 20;
+
+    for (let i = 0; i < 14; i++) {
+      const p = document.createElement('div');
+      const size = 4 + Math.random() * 5;
+      const angle = (i / 14) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+      const dist = 35 + Math.random() * 45;
+      const endX = Math.cos(angle) * dist;
+      const endY = Math.sin(angle) * dist;
+
+      p.style.cssText = `
+        position: absolute;
+        width: ${size}px;
+        height: ${size}px;
+        border-radius: 50%;
+        background: ${particleColors[i % particleColors.length]};
+        left: ${cx}px;
+        top: ${cy}px;
+        z-index: 16;
+        pointer-events: none;
+      `;
+      container.appendChild(p);
+
+      p.animate([
+        { opacity: 1, transform: 'translate(0, 0) scale(1)' },
+        { opacity: 0.8, transform: `translate(${endX * 0.3}px, ${endY * 0.3}px) scale(1.1)`, offset: 0.3 },
+        { opacity: 0, transform: `translate(${endX}px, ${endY}px) scale(0)` }
+      ], {
+        duration: 700 + Math.random() * 300,
+        delay: Math.random() * 80,
+        easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+        fill: 'forwards'
+      });
+
+      setTimeout(() => p.remove(), 1200);
+    }
+  }
+
+  function replaySheetCeleb() {
+    const sheet = document.getElementById('mealSheet');
+    const overlay = document.getElementById('sheetOverlay');
+    const celeb = document.getElementById('celebOverlay');
+    const newRow = document.getElementById('newMealRow');
+
+    sheet.classList.remove('dismissed');
+    overlay.classList.remove('hidden');
+    celeb.classList.remove('show');
+    celeb.style.transition = 'none';
+    celeb.style.opacity = '';
+    newRow.classList.remove('appear');
+    sheetAnimating = false;
+  }
+
+  // 4. Glow
+  function replayGlow() {
+    const card = document.getElementById('glowCard');
+    card.classList.remove('breathing');
+    void card.offsetWidth;
+    card.classList.add('breathing');
+  }
+
+  // 5. Stagger
+  function replayStagger() {
+    const rows = document.querySelectorAll('#staggerList .stagger-row');
+    rows.forEach(r => { r.classList.remove('animate'); });
+    void document.getElementById('staggerList').offsetWidth;
+    setTimeout(() => {
+      rows.forEach(r => r.classList.add('animate'));
+    }, 50);
+  }
+
+  // 6. Counter
+  function replayCounter() {
+    const el = document.getElementById('counterVal');
+    const fill = document.getElementById('counterFill');
+    const target = 1247;
+    const duration = 1200;
+    const start = performance.now();
+
+    fill.style.width = '0%';
+    el.textContent = '0';
+
+    setTimeout(() => { fill.style.width = '67%'; }, 50);
+
+    function tick(now) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.round(target * eased).toLocaleString();
+      if (progress < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+  setTimeout(replayCounter, 600);
+</script>
+
+</body>
+</html>

@@ -8,6 +8,8 @@ struct FeelCheckView: View {
 
     // Optional date for logging past days
     var forDate: Date?
+    // Optional preselection from home screen feeling chips
+    var preselectedState: String? = nil
 
     @State private var selectedPrimaryState: FeelCheck.PrimaryState? = nil
     @State private var selectedMoods: Set<FeelCheck.Mood> = []
@@ -81,6 +83,12 @@ struct FeelCheckView: View {
             }
             .safeAreaInset(edge: .bottom) {
                 saveButton
+            }
+            .onAppear {
+                if let preselected = preselectedState,
+                   let match = FeelCheck.PrimaryState.allCases.first(where: { $0.rawValue == preselected }) {
+                    selectedPrimaryState = match
+                }
             }
         }
     }

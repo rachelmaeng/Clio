@@ -15,6 +15,8 @@ struct HomeView: View {
     @State private var showAddMeal = false
     @State private var showAddMovement = false
     @State private var showQuickLog = false
+    @State private var selectedFeeling: String? = nil
+    @State private var preselectedFeeling: String? = nil
 
     private var userSettings: UserSettings? {
         settings.first
@@ -84,18 +86,26 @@ struct HomeView: View {
                     homeHero
                         .padding(.horizontal, -ClioTheme.spacing) // Break out of VStack padding
 
-                    // Feel Check CTA or compact summary
-                    feelCheckSection
+                    // Cycle Phase progress bar
+                    cyclePhaseBar
+                        .fadeInFromBottom(delay: 0.05)
+
+                    // Quick Log tiles
+                    quickLogSection
                         .fadeInFromBottom(delay: 0.1)
 
-                    // Today's Summary (always visible with empty states)
-                    todaySummary
+                    // How are you feeling? chips
+                    feelingChipsSection
                         .fadeInFromBottom(delay: 0.15)
+
+                    // Today So Far summary
+                    todaySoFar
+                        .fadeInFromBottom(delay: 0.2)
 
                     // Insight card (only when checked in + 70%+ confidence)
                     if let insight = topInsight {
                         insightCard(insight)
-                            .fadeInFromBottom(delay: 0.2)
+                            .fadeInFromBottom(delay: 0.25)
                     }
                 }
                 .padding(.horizontal, ClioTheme.spacing)
@@ -110,7 +120,13 @@ struct HomeView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.hidden, for: .navigationBar)
             .sheet(isPresented: $showFeelCheck) {
-                FeelCheckView()
+                FeelCheckView(preselectedState: preselectedFeeling)
+            }
+            .onChange(of: showFeelCheck) { _, isShowing in
+                if !isShowing {
+                    selectedFeeling = nil
+                    preselectedFeeling = nil
+                }
             }
             .sheet(isPresented: $showAddMeal) {
                 AddMealView()
@@ -170,53 +186,318 @@ struct HomeView: View {
             .frame(height: 120)
             .frame(maxHeight: .infinity, alignment: .bottom)
 
-            // Greeting + Log button overlaid on gradient
-            HStack(alignment: .bottom) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(greeting)
-                        .font(ClioTheme.headingFont(22))
-                        .foregroundStyle(ClioTheme.text)
+            // Greeting overlaid on gradient
+            VStack(alignment: .leading, spacing: 4) {
+                Text(greeting)
+                    .font(ClioTheme.headingFont(22))
+                    .foregroundStyle(ClioTheme.text)
 
-                    HStack(spacing: 6) {
-                        Circle()
-                            .fill(ClioTheme.phaseColor(for: currentPhase))
-                            .frame(width: 6, height: 6)
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(ClioTheme.phaseColor(for: currentPhase))
+                        .frame(width: 6, height: 6)
 
-                        if let day = userSettings?.dayOfCycle {
-                            Text("\(currentPhase.description) · Day \(day)")
-                                .font(ClioTheme.captionFont(13))
-                                .foregroundStyle(ClioTheme.textMuted)
-                        } else {
-                            Text(currentPhase.description)
-                                .font(ClioTheme.captionFont(13))
-                                .foregroundStyle(ClioTheme.textMuted)
-                        }
+                    if let day = userSettings?.dayOfCycle {
+                        Text("\(currentPhase.description) · Day \(day)")
+                            .font(ClioTheme.captionFont(13))
+                            .foregroundStyle(ClioTheme.textMuted)
+                    } else {
+                        Text(currentPhase.description)
+                            .font(ClioTheme.captionFont(13))
+                            .foregroundStyle(ClioTheme.textMuted)
                     }
-                }
-
-                Spacer()
-
-                // Quick Log button
-                Button {
-                    showQuickLog = true
-                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 12, weight: .bold))
-                        Text("Log")
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                    }
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(ClioTheme.terracotta)
-                    .clipShape(Capsule())
                 }
             }
             .padding(.horizontal, ClioTheme.spacing)
             .padding(.bottom, 10)
+        }
+    }
+
+    // MARK: - Cycle Phase Progress Bar
+    private var cyclePhaseBar: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("CYCLE PHASE")
+                .font(ClioTheme.captionFont(11))
+                .fontWeight(.medium)
+                .foregroundStyle(ClioTheme.textMuted)
+                .tracking(0.5)
+
+            // Segmented progress bar
+            GeometryReader { geo in
+                let totalWidth = geo.size.width
+                let phases: [(CyclePhase, Double, Color)] = phaseSegments
+
+                HStack(spacing: 3) {
+                    ForEach(Array(phases.enumerated()), id: \.offset) { index, segment in
+                        let (phase, fraction, color) = segment
+                        let isActive = phase == currentPhase
+
+                        RoundedRectangle(cornerRadius: 3)
+                            .fill(isActive ? color : color.opacity(0.35))
+                            .frame(width: totalWidth * fraction - 3, height: 8)
+                    }
+                }
+            }
+            .frame(height: 6)
+
+            // Phase label + description
+            HStack {
+                Text(currentPhase.rawValue.capitalized)
+                    .font(ClioTheme.labelFont(14))
+                    .foregroundStyle(ClioTheme.phaseColor(for: currentPhase))
+
+                Spacer()
+
+                if let phaseInfo = userSettings?.currentPhaseInfo {
+                    Text(phaseRangeText + " · " + phaseEnergyLabel)
+                        .font(ClioTheme.captionFont(12))
+                        .foregroundStyle(ClioTheme.textMuted)
+                }
+            }
+        }
+    }
+
+    private var phaseSegments: [(CyclePhase, Double, Color)] {
+        let cycleLen = Double(userSettings?.cycleLength ?? 28)
+        let menstrualFrac = 5.0 / cycleLen
+        let follicularFrac = (cycleLen * 0.46 - 5.0) / cycleLen
+        let ovulationFrac = (cycleLen * 0.57 - cycleLen * 0.46) / cycleLen
+        let lutealFrac = 1.0 - menstrualFrac - follicularFrac - ovulationFrac
+
+        return [
+            (.menstrual, menstrualFrac, ClioTheme.menstrualPhase),
+            (.follicular, follicularFrac, ClioTheme.follicularPhase),
+            (.ovulation, ovulationFrac, ClioTheme.ovulationPhase),
+            (.luteal, lutealFrac, ClioTheme.lutealPhase),
+        ]
+    }
+
+    private var phaseRangeText: String {
+        let cycleLen = userSettings?.cycleLength ?? 28
+        switch currentPhase {
+        case .menstrual: return "Days 1-5"
+        case .follicular:
+            let end = Int(Double(cycleLen) * 0.46)
+            return "Days 6-\(end)"
+        case .ovulation:
+            let start = Int(Double(cycleLen) * 0.46) + 1
+            let end = Int(Double(cycleLen) * 0.57)
+            return "Days \(start)-\(end)"
+        case .luteal:
+            let start = Int(Double(cycleLen) * 0.57) + 1
+            return "Days \(start)-\(cycleLen)"
+        }
+    }
+
+    private var phaseEnergyLabel: String {
+        switch currentPhase {
+        case .menstrual: return "Rest & restore"
+        case .follicular: return "Rising energy"
+        case .ovulation: return "Peak energy"
+        case .luteal: return "Winding down"
+        }
+    }
+
+    // MARK: - Quick Log Tiles
+    private var quickLogSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("QUICK LOG")
+                .font(ClioTheme.captionFont(11))
+                .fontWeight(.medium)
+                .foregroundStyle(ClioTheme.textMuted)
+                .tracking(0.5)
+
+            HStack(spacing: 12) {
+                // Meal tile
+                Button {
+                    showAddMeal = true
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                } label: {
+                    VStack(spacing: 8) {
+                        Image(systemName: "fork.knife")
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundStyle(ClioTheme.eatColor)
+                        Text("Meal")
+                            .font(ClioTheme.captionFont(12))
+                            .foregroundStyle(ClioTheme.text)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 80)
+                    .background(ClioTheme.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .shadow(color: ClioTheme.cardShadowColor.opacity(0.05), radius: 6, x: 0, y: 2)
+                }
+                .buttonStyle(ScaleButtonStyle())
+
+                // Movement tile
+                Button {
+                    showAddMovement = true
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                } label: {
+                    VStack(spacing: 8) {
+                        Image(systemName: "figure.run")
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundStyle(ClioTheme.moveColor)
+                        Text("Movement")
+                            .font(ClioTheme.captionFont(12))
+                            .foregroundStyle(ClioTheme.text)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 80)
+                    .background(ClioTheme.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .shadow(color: ClioTheme.cardShadowColor.opacity(0.05), radius: 6, x: 0, y: 2)
+                }
+                .buttonStyle(ScaleButtonStyle())
+            }
+        }
+    }
+
+    // MARK: - How Are You Feeling Chips
+    private struct FeelingOption: Identifiable {
+        let label: String
+        let icon: String
+        let color: Color
+        let primaryState: String // Maps to FeelCheck.PrimaryState rawValue
+        var id: String { label }
+    }
+
+    private var feelingOptions: [FeelingOption] {
+        [
+            FeelingOption(label: "Energized", icon: "bolt.fill", color: ClioTheme.terracotta, primaryState: "Energized"),
+            FeelingOption(label: "Okay", icon: "equal", color: ClioTheme.sage, primaryState: "Balanced"),
+            FeelingOption(label: "Tired", icon: "zzz", color: Color(hex: "8A9BAA"), primaryState: "Heavy"),
+            FeelingOption(label: "Low", icon: "battery.25percent", color: ClioTheme.lutealPhase, primaryState: "Low"),
+        ]
+    }
+
+    private var feelingChipsSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("HOW ARE YOU FEELING?")
+                .font(ClioTheme.captionFont(11))
+                .fontWeight(.medium)
+                .foregroundStyle(ClioTheme.textMuted)
+                .tracking(0.5)
+
+            HStack(spacing: 8) {
+                ForEach(feelingOptions) { option in
+                    let isActive = selectedFeeling == option.label || todayFeelCheck?.primaryState == option.label
+                    let chipColor = option.color
+                    Button {
+                        withAnimation(.easeOut(duration: 0.15)) {
+                            selectedFeeling = option.label
+                        }
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                            preselectedFeeling = option.primaryState
+                            showFeelCheck = true
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: option.icon)
+                                .font(.system(size: 9, weight: .medium))
+                            Text(option.label)
+                                .font(ClioTheme.labelFont(12))
+                                .fixedSize(horizontal: true, vertical: false)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .foregroundStyle(isActive ? chipColor : ClioTheme.text)
+                        .padding(.vertical, 10)
+                        .background(
+                            isActive
+                                ? chipColor.opacity(0.15)
+                                : ClioTheme.surfaceHighlight
+                        )
+                        .clipShape(Capsule())
+                        .overlay(
+                            Capsule()
+                                .stroke(isActive ? chipColor.opacity(0.3) : ClioTheme.sand.opacity(0.6), lineWidth: 1)
+                        )
+                    }
+                    .buttonStyle(ScaleButtonStyle())
+                }
+            }
+        }
+    }
+
+    // MARK: - Today So Far
+    private var todaySoFar: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("TODAY SO FAR")
+                .font(ClioTheme.captionFont(11))
+                .fontWeight(.medium)
+                .foregroundStyle(ClioTheme.textMuted)
+                .tracking(0.5)
+
+            HStack(spacing: 12) {
+                // Meals summary
+                Button {
+                    selectedTab = .eat
+                } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: "fork.knife")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(ClioTheme.eatColor)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Meals logged")
+                                .font(ClioTheme.captionFont(11))
+                                .foregroundStyle(ClioTheme.textMuted)
+                            Text("\(todayMeals.count) of 3")
+                                .font(ClioTheme.labelFont(15))
+                                .foregroundStyle(ClioTheme.text)
+                            if !mealTypesSummary.isEmpty {
+                                Text(mealTypesSummary)
+                                    .font(ClioTheme.captionFont(11))
+                                    .foregroundStyle(ClioTheme.textMuted)
+                                    .lineLimit(1)
+                            }
+                        }
+
+                        Spacer()
+                    }
+                    .padding(14)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(ClioTheme.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .shadow(color: ClioTheme.cardShadowColor.opacity(0.04), radius: 6, x: 0, y: 2)
+                }
+                .buttonStyle(ScaleButtonStyle())
+
+                // Movement summary
+                Button {
+                    selectedTab = .move
+                } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: "figure.run")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(ClioTheme.moveColor)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Movement")
+                                .font(ClioTheme.captionFont(11))
+                                .foregroundStyle(ClioTheme.textMuted)
+                            Text(todayMinutes > 0 ? "\(todayMinutes) min" : "None yet")
+                                .font(ClioTheme.labelFont(15))
+                                .foregroundStyle(ClioTheme.text)
+                            if let summary = movementSummaryText {
+                                Text(summary)
+                                    .font(ClioTheme.captionFont(11))
+                                    .foregroundStyle(ClioTheme.textMuted)
+                                    .lineLimit(1)
+                            }
+                        }
+
+                        Spacer()
+                    }
+                    .padding(14)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(ClioTheme.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .shadow(color: ClioTheme.cardShadowColor.opacity(0.04), radius: 6, x: 0, y: 2)
+                }
+                .buttonStyle(ScaleButtonStyle())
+            }
         }
     }
 
