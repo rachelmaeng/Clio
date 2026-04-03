@@ -151,7 +151,7 @@ final class MovementEntry {
             case .upperBody: return "figure.arms.open"
             case .lowerBody: return "figure.walk"
             case .push: return "figure.strengthtraining.traditional"
-            case .pull: return "arrow.down.to.line"
+            case .pull: return "figure.boxing"
             case .fullBody: return "dumbbell.fill"
             case .core: return "figure.core.training"
             // Flexibility

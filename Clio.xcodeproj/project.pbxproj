@@ -42,6 +42,7 @@
 		A10000530000000000000053 /* FeelCheckView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000530000000000000053 /* FeelCheckView.swift */; };
 		A10000540000000000000054 /* InsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000540000000000000054 /* InsightsView.swift */; };
 		A10000550000000000000055 /* MoveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000550000000000000055 /* MoveView.swift */; };
+		MH1000010000000000000001 /* MealHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MH2000010000000000000001 /* MealHistoryView.swift */; };
 		Q10000010000000000000001 /* QuickDailyLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = Q20000010000000000000001 /* QuickDailyLogView.swift */; };
 		A10000560000000000000056 /* PhaseTipData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000560000000000000056 /* PhaseTipData.swift */; };
 		A10000570000000000000057 /* CorrelationEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000570000000000000057 /* CorrelationEngine.swift */; };
@@ -90,6 +91,7 @@
 		A20000530000000000000053 /* FeelCheckView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeelCheckView.swift; sourceTree = "<group>"; };
 		A20000540000000000000054 /* InsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsView.swift; sourceTree = "<group>"; };
 		A20000550000000000000055 /* MoveView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoveView.swift; sourceTree = "<group>"; };
+		MH2000010000000000000001 /* MealHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealHistoryView.swift; sourceTree = "<group>"; };
 		Q20000010000000000000001 /* QuickDailyLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickDailyLogView.swift; sourceTree = "<group>"; };
 		A20000560000000000000056 /* PhaseTipData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhaseTipData.swift; sourceTree = "<group>"; };
 		A20000570000000000000057 /* CorrelationEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CorrelationEngine.swift; sourceTree = "<group>"; };
@@ -199,6 +201,7 @@
 				A20000530000000000000053 /* FeelCheckView.swift */,
 				A20000540000000000000054 /* InsightsView.swift */,
 				A20000550000000000000055 /* MoveView.swift */,
+				MH2000010000000000000001 /* MealHistoryView.swift */,
 				Q20000010000000000000001 /* QuickDailyLogView.swift */,
 			);
 			path = Views;
@@ -392,6 +395,7 @@
 				A10000530000000000000053 /* FeelCheckView.swift in Sources */,
 				A10000540000000000000054 /* InsightsView.swift in Sources */,
 				A10000550000000000000055 /* MoveView.swift in Sources */,
+				MH1000010000000000000001 /* MealHistoryView.swift in Sources */,
 				Q10000010000000000000001 /* QuickDailyLogView.swift in Sources */,
 				A10000560000000000000056 /* PhaseTipData.swift in Sources */,
 				A10000570000000000000057 /* CorrelationEngine.swift in Sources */,

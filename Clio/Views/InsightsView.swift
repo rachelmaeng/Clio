@@ -28,10 +28,6 @@ struct InsightsView: View {
         insights.filter { !$0.hasBeenDismissed }
     }
 
-    private var groupedInsights: [InsightGroup] {
-        InsightGenerator.groupInsightsForDisplay(insights)
-    }
-
     /// Check if user has minimum data for personalized insights (14+ days, enough entries)
     private var hasMinimumDataForInsights: Bool {
         CorrelationEngine.hasMinimumDataForInsights(
@@ -39,6 +35,20 @@ struct InsightsView: View {
             movements: movements,
             feelChecks: feelChecks
         )
+    }
+
+    /// Top insight for featured card — prioritize positive correlations
+    private var featuredInsight: PersonalInsight? {
+        let active = insights.filter { !$0.hasBeenDismissed }
+        // Prefer positive insights first, then fall back to any
+        return active.first(where: { $0.isPositive }) ?? active.first
+    }
+
+    /// Remaining insights (after featured)
+    private var moreInsights: [PersonalInsight] {
+        let active = insights.filter { !$0.hasBeenDismissed }
+        guard let featured = featuredInsight else { return active }
+        return active.filter { $0.id != featured.id }
     }
 
     var body: some View {
@@ -49,38 +59,36 @@ struct InsightsView: View {
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 24) {
-                        // Hero illustration - full width
-                        // No fadeInFromBottom on hero to prevent white flash
+                        // Hero illustration
                         insightsHero
                             .padding(.horizontal, -ClioTheme.spacing)
 
-                        // Header
-                        header
+                        // Cycle phase timeline bar
+                        cyclePhaseTimeline
                             .fadeInFromBottom(delay: 0.05)
 
-                        // Grouped Insights OR Cold Start / Empty State
-                        if !groupedInsights.isEmpty {
-                            groupedInsightsSection
-                                .fadeInFromBottom(delay: 0.1)
-                        } else if !hasMinimumDataForInsights {
-                            // Cold start: not enough data yet
-                            coldStartSection
-                                .fadeInFromBottom(delay: 0.1)
-                        } else if activeInsights.isEmpty {
-                            // Has enough data but no patterns found yet
-                            emptyState
+                        // Featured pattern card (only if strong patterns exist)
+                        if let featured = featuredInsight {
+                            featuredPatternCard(featured)
                                 .fadeInFromBottom(delay: 0.1)
                         }
 
-                        // Cycle Calendar - now collapsible
+                        // More patterns list
+                        if !moreInsights.isEmpty {
+                            morePatternsSection
+                                .fadeInFromBottom(delay: 0.15)
+                        }
+
+                        // Empty state if no insights at all
+                        if activeInsights.isEmpty {
+                            noInsightsYetCard
+                                .fadeInFromBottom(delay: 0.1)
+                        }
+
+                        // Cycle Calendar - collapsible
                         cycleCalendar
                             .fadeInFromBottom(delay: 0.25)
 
-                        // Stats Summary - only show if there's data
-                        if thisMonthMeals > 0 || thisMonthMovements > 0 || thisMonthFeelChecks > 0 {
-                            statsSummary
-                                .fadeInFromBottom(delay: 0.3)
-                        }
                     }
                     .padding(.horizontal, ClioTheme.spacing)
                     .padding(.bottom, 100)
@@ -194,17 +202,178 @@ struct InsightsView: View {
         return Image(systemName: "photo")
     }
 
-    // MARK: - Header
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Insights")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .foregroundStyle(ClioTheme.text)
+    // MARK: - Cycle Phase Timeline Bar
+    private var phaseSegments: [(CyclePhase, Double, Color)] {
+        let cycleLen = Double(userSettings?.cycleLength ?? 28)
+        let menstrualFrac = 5.0 / cycleLen
+        let follicularFrac = (cycleLen * 0.46 - 5.0) / cycleLen
+        let ovulationFrac = (cycleLen * 0.57 - cycleLen * 0.46) / cycleLen
+        let lutealFrac = 1.0 - menstrualFrac - follicularFrac - ovulationFrac
 
-            Text("Patterns discovered from your logs")
-                .font(.subheadline)
+        return [
+            (.menstrual, menstrualFrac, ClioTheme.menstrualPhase),
+            (.follicular, follicularFrac, ClioTheme.follicularPhase),
+            (.ovulation, ovulationFrac, ClioTheme.ovulationPhase),
+            (.luteal, lutealFrac, ClioTheme.lutealPhase),
+        ]
+    }
+
+    private var cyclePhaseTimeline: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("YOUR CYCLE")
+                    .font(ClioTheme.captionFont(11))
+                    .fontWeight(.medium)
+                    .foregroundStyle(ClioTheme.textMuted)
+                    .tracking(0.5)
+
+                Spacer()
+
+                Text("\(userSettings?.cycleLength ?? 28) days")
+                    .font(ClioTheme.captionFont(12))
+                    .foregroundStyle(ClioTheme.textMuted)
+            }
+
+            // Phase bar
+            GeometryReader { geo in
+                let totalWidth = geo.size.width
+                HStack(spacing: 3) {
+                    ForEach(Array(phaseSegments.enumerated()), id: \.offset) { _, segment in
+                        let (phase, fraction, color) = segment
+                        let isActive = phase == currentPhase
+
+                        RoundedRectangle(cornerRadius: 3)
+                            .fill(isActive ? color : color.opacity(0.35))
+                            .frame(width: totalWidth * fraction - 3, height: 8)
+                    }
+                }
+            }
+            .frame(height: 8)
+
+            // Phase labels
+            HStack(spacing: 3) {
+                ForEach(CyclePhase.allCases, id: \.self) { phase in
+                    HStack(spacing: 3) {
+                        Circle()
+                            .fill(ClioTheme.phaseColor(for: phase))
+                            .frame(width: 5, height: 5)
+
+                        Text(ClioTheme.phaseName(for: phase))
+                            .font(.system(size: 9))
+                            .foregroundStyle(phase == currentPhase ? ClioTheme.text : ClioTheme.textMuted)
+                            .fixedSize()
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: - Featured Pattern Card
+    private func featuredPatternCard(_ insight: PersonalInsight) -> some View {
+        Button {
+            selectedInsight = insight
+        } label: {
+            VStack(alignment: .leading, spacing: 12) {
+                // Badge
+                HStack(spacing: 6) {
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 11, weight: .bold))
+                    Text("PATTERN DISCOVERED")
+                        .font(ClioTheme.captionFont(10))
+                        .fontWeight(.bold)
+                        .tracking(0.5)
+                }
+                .foregroundStyle(.white.opacity(0.85))
+
+                // Title
+                Text(insight.title)
+                    .font(ClioTheme.headingFont(20))
+                    .foregroundStyle(.white)
+                    .multilineTextAlignment(.leading)
+
+                // Body
+                Text(insight.body)
+                    .font(ClioTheme.captionFont(13))
+                    .foregroundStyle(.white.opacity(0.8))
+                    .lineLimit(3)
+                    .multilineTextAlignment(.leading)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(20)
+            .background(ClioTheme.sage)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+        .buttonStyle(ScaleButtonStyle())
+    }
+
+    // MARK: - More Patterns Section
+    private var morePatternsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("MORE PATTERNS")
+                .font(ClioTheme.captionFont(11))
+                .fontWeight(.medium)
                 .foregroundStyle(ClioTheme.textMuted)
+                .tracking(0.5)
+
+            VStack(spacing: 0) {
+                ForEach(Array(moreInsights.enumerated()), id: \.element.id) { index, insight in
+                    Button {
+                        selectedInsight = insight
+                    } label: {
+                        HStack(spacing: 12) {
+                            // Category icon
+                            ZStack {
+                                Circle()
+                                    .fill(insightCategoryColor(insight).opacity(0.12))
+                                    .frame(width: 40, height: 40)
+
+                                Image(systemName: insight.categoryEnum?.icon ?? "sparkles")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundStyle(insightCategoryColor(insight))
+                            }
+
+                            // Content
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(insight.title)
+                                    .font(ClioTheme.labelFont(14))
+                                    .foregroundStyle(ClioTheme.text)
+                                    .lineLimit(1)
+                                    .multilineTextAlignment(.leading)
+
+                                Text(insight.body)
+                                    .font(ClioTheme.captionFont(12))
+                                    .foregroundStyle(ClioTheme.textMuted)
+                                    .lineLimit(2)
+                                    .multilineTextAlignment(.leading)
+                            }
+
+                            Spacer()
+
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundStyle(ClioTheme.textMuted)
+                        }
+                        .padding(14)
+                    }
+                    .buttonStyle(.plain)
+
+                    if index < moreInsights.count - 1 {
+                        Divider()
+                            .background(ClioTheme.textMuted.opacity(0.15))
+                            .padding(.horizontal, 16)
+                    }
+                }
+            }
+            .background(ClioTheme.surface)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+    }
+
+    private func insightCategoryColor(_ insight: PersonalInsight) -> Color {
+        switch insight.category {
+        case "food": return ClioTheme.eatColor
+        case "movement": return ClioTheme.moveColor
+        default: return ClioTheme.sage
         }
     }
 
@@ -335,283 +504,29 @@ struct InsightsView: View {
         .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
-    // MARK: - Grouped Insights Section
-    private var groupedInsightsSection: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            ForEach(groupedInsights) { group in
-                VStack(alignment: .leading, spacing: 12) {
-                    // Group header with icon
-                    HStack(spacing: 8) {
-                        Image(systemName: group.icon)
-                            .font(.subheadline)
-                            .foregroundStyle(ClioTheme.primary)
-
-                        Text(group.title)
-                            .font(.headline)
-                            .foregroundStyle(ClioTheme.text)
-                    }
-
-                    // Insights in this group
-                    VStack(spacing: 10) {
-                        ForEach(group.insights) { insight in
-                            SwipeableInsightCard(
-                                insight: insight,
-                                isNew: insight.isNew,
-                                onTap: {
-                                    selectedInsight = insight
-                                },
-                                onDismiss: {
-                                    dismissInsight(insight)
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     private func dismissInsight(_ insight: PersonalInsight) {
         withAnimation(.easeOut(duration: 0.3)) {
             InsightGenerator.dismissInsight(insight, modelContext: modelContext)
         }
     }
 
-    // MARK: - Cold Start Section (Not enough data yet)
-    private var coldStartSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            // Section header
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Things to explore")
-                    .font(.headline)
-                    .foregroundStyle(ClioTheme.text)
+    // MARK: - No Insights Yet
+    private var noInsightsYetCard: some View {
+        VStack(spacing: 14) {
+            Image(systemName: "chart.line.uptrend.xyaxis")
+                .font(.system(size: 28))
+                .foregroundStyle(ClioTheme.sage.opacity(0.6))
 
-                Text("General suggestions for your \(currentPhase.description.lowercased()) phase")
-                    .font(.caption)
-                    .foregroundStyle(ClioTheme.textMuted)
-            }
-
-            // Generic phase-based suggestions
-            VStack(spacing: 10) {
-                ForEach(coldStartSuggestions, id: \.title) { suggestion in
-                    coldStartSuggestionCard(suggestion)
-                }
-            }
-
-            // Progress indicator
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Image(systemName: "chart.line.uptrend.xyaxis")
-                        .font(.subheadline)
-                        .foregroundStyle(ClioTheme.primary)
-
-                    Text("Building your insights")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundStyle(ClioTheme.text)
-                }
-
-                Text("Keep logging for 14+ days. Clio will find patterns from your unique data—no generic advice, just what works for your body.")
-                    .font(.caption)
-                    .foregroundStyle(ClioTheme.textMuted)
-                    .lineSpacing(2)
-            }
-            .padding()
-            .background(ClioTheme.surfaceHighlight)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            Text("Keep logging — patterns will appear here after a few weeks")
+                .font(ClioTheme.bodyFont())
+                .foregroundStyle(ClioTheme.textMuted)
+                .multilineTextAlignment(.center)
+                .lineSpacing(3)
         }
-    }
-
-    private func coldStartSuggestionCard(_ suggestion: ColdStartSuggestion) -> some View {
-        HStack(spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(ClioTheme.phaseColor(for: currentPhase).opacity(0.15))
-                    .frame(width: 44, height: 44)
-
-                Image(systemName: suggestion.icon)
-                    .font(.system(size: 18))
-                    .foregroundStyle(ClioTheme.phaseColor(for: currentPhase))
-            }
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(suggestion.title)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundStyle(ClioTheme.text)
-
-                Text(suggestion.body)
-                    .font(.caption)
-                    .foregroundStyle(ClioTheme.textMuted)
-                    .lineLimit(2)
-            }
-
-            Spacer()
-        }
-        .padding()
-        .background(ClioTheme.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-    }
-
-    private struct ColdStartSuggestion {
-        let icon: String
-        let title: String
-        let body: String
-    }
-
-    private var coldStartSuggestions: [ColdStartSuggestion] {
-        switch currentPhase {
-        case .menstrual:
-            return [
-                ColdStartSuggestion(
-                    icon: "leaf",
-                    title: "Gentle movement",
-                    body: "Many find gentle yoga or walking helpful during this phase"
-                ),
-                ColdStartSuggestion(
-                    icon: "flame",
-                    title: "Warm, nourishing foods",
-                    body: "Iron-rich foods like leafy greens and lentils may support energy"
-                ),
-                ColdStartSuggestion(
-                    icon: "moon.zzz",
-                    title: "Rest is productive",
-                    body: "Honor your body's need for rest—it's part of the cycle"
-                )
-            ]
-        case .follicular:
-            return [
-                ColdStartSuggestion(
-                    icon: "bolt",
-                    title: "Energy is building",
-                    body: "This phase often brings rising energy—great for new challenges"
-                ),
-                ColdStartSuggestion(
-                    icon: "figure.run",
-                    title: "Try something new",
-                    body: "Your body may respond well to varied workouts"
-                ),
-                ColdStartSuggestion(
-                    icon: "sparkles",
-                    title: "Fresh, light foods",
-                    body: "Many feel good with fresh salads and lean proteins"
-                )
-            ]
-        case .ovulation:
-            return [
-                ColdStartSuggestion(
-                    icon: "sun.max",
-                    title: "Peak energy window",
-                    body: "Many experience highest energy and social drive now"
-                ),
-                ColdStartSuggestion(
-                    icon: "figure.highintensity.intervaltraining",
-                    title: "Higher intensity",
-                    body: "Your body may handle more intense workouts well"
-                ),
-                ColdStartSuggestion(
-                    icon: "carrot",
-                    title: "Fiber-rich foods",
-                    body: "Cruciferous veggies support estrogen metabolism"
-                )
-            ]
-        case .luteal:
-            return [
-                ColdStartSuggestion(
-                    icon: "heart",
-                    title: "Be gentle with yourself",
-                    body: "Energy may dip—adjust expectations accordingly"
-                ),
-                ColdStartSuggestion(
-                    icon: "fork.knife",
-                    title: "Complex carbs & magnesium",
-                    body: "Cravings are normal—nuts, seeds, and dark chocolate may help"
-                ),
-                ColdStartSuggestion(
-                    icon: "bed.double",
-                    title: "Prioritize sleep",
-                    body: "Good sleep supports mood and energy during this phase"
-                )
-            ]
-        }
-    }
-
-    // MARK: - Empty State (Has data but no patterns found yet)
-    private var emptyState: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "sparkles")
-                .font(.system(size: 40))
-                .foregroundStyle(ClioTheme.textMuted.opacity(0.5))
-
-            VStack(spacing: 8) {
-                Text("Patterns from your logs")
-                    .font(.headline)
-                    .foregroundStyle(ClioTheme.text)
-
-                Text("Clio is analyzing your data. Keep logging meals, movements, and how you feel—personal insights will appear as patterns emerge.")
-                    .font(.subheadline)
-                    .foregroundStyle(ClioTheme.textMuted)
-                    .multilineTextAlignment(.center)
-            }
-        }
-        .padding(32)
+        .padding(28)
         .frame(maxWidth: .infinity)
         .background(ClioTheme.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-    }
-
-    // MARK: - Stats Summary
-    private var statsSummary: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("This Month")
-                .font(.headline)
-                .foregroundStyle(ClioTheme.text)
-
-            HStack(spacing: 12) {
-                if thisMonthMeals > 0 {
-                    StatBox(
-                        icon: "fork.knife",
-                        value: "\(thisMonthMeals)",
-                        label: "Meals",
-                        color: ClioTheme.eatColor
-                    )
-                }
-
-                if thisMonthMovements > 0 {
-                    StatBox(
-                        icon: "figure.run",
-                        value: "\(thisMonthMovements)",
-                        label: "Workouts",
-                        color: ClioTheme.moveColor
-                    )
-                }
-
-                if thisMonthFeelChecks > 0 {
-                    StatBox(
-                        icon: "heart.fill",
-                        value: "\(thisMonthFeelChecks)",
-                        label: "Check-ins",
-                        color: ClioTheme.feelColor
-                    )
-                }
-            }
-        }
-    }
-
-    // MARK: - Computed Stats
-    private var thisMonthMeals: Int {
-        let startOfMonth = Calendar.current.date(from: Calendar.current.dateComponents([.year, .month], from: Date()))!
-        return meals.filter { $0.dateTime >= startOfMonth }.count
-    }
-
-    private var thisMonthMovements: Int {
-        let startOfMonth = Calendar.current.date(from: Calendar.current.dateComponents([.year, .month], from: Date()))!
-        return movements.filter { $0.dateTime >= startOfMonth }.count
-    }
-
-    private var thisMonthFeelChecks: Int {
-        let startOfMonth = Calendar.current.date(from: Calendar.current.dateComponents([.year, .month], from: Date()))!
-        return feelChecks.filter { $0.dateTime >= startOfMonth }.count
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
     private func monthYearString(_ date: Date) -> String {
@@ -935,34 +850,6 @@ struct SwipeableInsightCard: View {
 }
 
 // MARK: - Stat Box
-struct StatBox: View {
-    let icon: String
-    let value: String
-    let label: String
-    let color: Color
-
-    var body: some View {
-        VStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.title3)
-                .foregroundStyle(color)
-
-            Text(value)
-                .font(.title2)
-                .fontWeight(.bold)
-                .foregroundStyle(ClioTheme.text)
-
-            Text(label)
-                .font(.caption)
-                .foregroundStyle(ClioTheme.textMuted)
-        }
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(ClioTheme.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-    }
-}
-
 // MARK: - Insight Detail Sheet
 struct InsightDetailSheet: View {
     @Environment(\.modelContext) private var modelContext

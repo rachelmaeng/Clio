@@ -15,7 +15,7 @@ struct EatView: View {
 
     @State private var addMealSheet: AddMealSheetItem? = nil
     @State private var mealToEdit: MealEntry?
-    @State private var isTipsSectionExpanded: Bool = false
+    @State private var showMealHistory = false
 
     private var userSettings: UserSettings? {
         settings.first
@@ -34,64 +34,40 @@ struct EatView: View {
         todayMeals.compactMap { $0.calories }.reduce(0, +)
     }
 
+    /// Time formatter for meal timestamps
+    private var timeFormatter: DateFormatter {
+        let f = DateFormatter()
+        f.dateFormat = "h:mm a"
+        return f
+    }
+
+
     var body: some View {
         NavigationStack {
             ZStack {
-                // Background layer to prevent white flash
                 ClioTheme.background
                     .withGrain(opacity: 0.025)
                     .ignoresSafeArea()
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: ClioTheme.spacingLarge) {
-                        // Illustration hero - full width, extends into safe area
-                        // No fadeInFromBottom on hero to prevent white flash
+                        // Hero illustration
                         eatHero
-                            .padding(.horizontal, -ClioTheme.spacing) // Break out of VStack padding
+                            .padding(.horizontal, -ClioTheme.spacing)
 
-                        // Header with phase context
+                        // Phase label + Log a meal button
                         phaseHeader
                             .fadeInFromBottom(delay: 0.05)
 
-                        // Quick log by meal type (2x2 grid)
-                        mealTypeGrid
+                        // Today's meals as cards
+                        todayMealCards
                             .fadeInFromBottom(delay: 0.1)
-
-                        // Today's Log Section (only if meals exist)
-                        if !todayMeals.isEmpty {
-                            todayLogSection
-                                .fadeInFromBottom(delay: 0.15)
-                        }
-
-                        // Phase Tips Grid
-                        tipsSection
-                            .fadeInFromBottom(delay: 0.2)
                     }
                     .padding(.horizontal, ClioTheme.spacing)
                     .padding(.bottom, 100)
                 }
                 .scrollContentBackground(.hidden)
                 .ignoresSafeArea(edges: .top)
-
-                // Custom add button overlay
-                VStack {
-                    HStack {
-                        Spacer()
-                        Button {
-                            addMealSheet = AddMealSheetItem(prefilledTip: nil, preselectedMealType: nil)
-                        } label: {
-                            Image(systemName: "plus")
-                                .font(.title3.weight(.semibold))
-                                .foregroundStyle(ClioTheme.eatColor)
-                                .frame(width: 44, height: 44)
-                                .background(ClioTheme.surface.opacity(0.9))
-                                .clipShape(Circle())
-                        }
-                        .padding(.trailing, ClioTheme.spacing)
-                    }
-                    .padding(.top, 60)
-                    Spacer()
-                }
             }
             .navigationBarTitleDisplayMode(.inline)
             .sheet(item: $addMealSheet) { item in
@@ -99,6 +75,9 @@ struct EatView: View {
             }
             .sheet(item: $mealToEdit) { meal in
                 EditMealView(meal: meal)
+            }
+            .sheet(isPresented: $showMealHistory) {
+                MealHistoryView()
             }
         }
     }
@@ -160,156 +139,152 @@ struct EatView: View {
         return Image(systemName: "photo")
     }
 
-    // MARK: - Phase Header
+    // MARK: - Phase Header + Log Button
     private var phaseHeader: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 14) {
+            // Phase context
+            HStack(spacing: 6) {
+                Circle()
+                    .fill(ClioTheme.phaseColor(for: currentPhase))
+                    .frame(width: 6, height: 6)
+
+                Text(currentPhase.description)
+                    .font(ClioTheme.captionFont(12))
+                    .foregroundStyle(ClioTheme.textMuted)
+
+                Spacer()
+
                 // Calorie summary if they have goal
                 if userSettings?.hasCalorieGoal == true, let range = userSettings?.calorieRangeText {
-                    HStack(spacing: 4) {
-                        Text("\(todayCalories)")
-                            .font(ClioTheme.headingFont(24))
-                            .foregroundStyle(ClioTheme.text)
-
-                        Text("of \(range) cal")
-                            .font(ClioTheme.captionFont())
-                            .foregroundStyle(ClioTheme.textMuted)
-                    }
-                }
-
-                // Phase context - subtle
-                HStack(spacing: 6) {
-                    Circle()
-                        .fill(ClioTheme.phaseColor(for: currentPhase))
-                        .frame(width: 6, height: 6)
-
-                    Text("\(currentPhase.description)")
+                    Text("\(todayCalories) of \(range) cal")
                         .font(ClioTheme.captionFont(12))
                         .foregroundStyle(ClioTheme.textMuted)
                 }
             }
 
-            Spacer()
+            // Log a meal button
+            Button {
+                addMealSheet = AddMealSheetItem(prefilledTip: nil, preselectedMealType: nil)
+            } label: {
+                Text("Log a meal")
+            }
+            .buttonStyle(ClioPrimaryButtonStyle())
         }
     }
 
-    // MARK: - Today's Log Section
-    private var todayLogSection: some View {
+    // MARK: - Today Meal Cards
+    private var todayMealCards: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Today")
-                    .font(.headline)
-                    .foregroundStyle(ClioTheme.text)
+                Text("TODAY")
+                    .font(ClioTheme.captionFont(11))
+                    .fontWeight(.medium)
+                    .foregroundStyle(ClioTheme.textMuted)
+                    .tracking(0.5)
 
                 Spacer()
 
-                Text("\(todayMeals.count) meal\(todayMeals.count == 1 ? "" : "s")")
-                    .font(.caption)
-                    .foregroundStyle(ClioTheme.textMuted)
-            }
-
-            VStack(spacing: 8) {
-                ForEach(todayMeals.prefix(3), id: \.id) { meal in
-                    MealLogRow(meal: meal) {
-                        mealToEdit = meal
-                    }
-                }
-
-                if todayMeals.count > 3 {
-                    Button {
-                        // Show all meals
-                    } label: {
-                        Text("View all \(todayMeals.count) meals")
-                            .font(.subheadline)
-                            .foregroundStyle(ClioTheme.eatColor)
-                    }
+                Button {
+                    showMealHistory = true
+                } label: {
+                    Text("View all")
+                        .font(ClioTheme.captionFont(12))
+                        .foregroundStyle(ClioTheme.eatColor)
                 }
             }
-            .padding()
-            .background(ClioTheme.surface)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-        }
-    }
 
-    // MARK: - Meal Type Grid (2x2)
-    private var mealTypeGrid: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Quick log")
-                    .font(.headline)
-                    .foregroundStyle(ClioTheme.text)
-
-                Text("Tap to start logging")
-                    .font(.caption)
-                    .foregroundStyle(ClioTheme.textMuted)
-            }
-
-            LazyVGrid(columns: [
-                GridItem(.flexible(), spacing: 12),
-                GridItem(.flexible(), spacing: 12)
-            ], spacing: 12) {
-                ForEach(MealEntry.MealType.allCases) { type in
-                    MealTypeTile(mealType: type) {
-                        addMealSheet = AddMealSheetItem(prefilledTip: nil, preselectedMealType: type)
-                    }
-                }
-            }
-        }
-    }
-
-    // MARK: - Tips Section (Collapsible)
-    private var tipsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            // Collapsible header
-            Button {
-                withAnimation(.clioQuick) {
-                    isTipsSectionExpanded.toggle()
-                }
-            } label: {
-                HStack {
-                    Image(systemName: isTipsSectionExpanded ? "chevron.down" : "chevron.right")
-                        .font(.system(size: 12, weight: .medium))
+            if todayMeals.isEmpty {
+                // Empty state
+                VStack(spacing: 8) {
+                    Text("No meals logged yet today")
+                        .font(ClioTheme.captionFont(13))
                         .foregroundStyle(ClioTheme.textMuted)
-
-                    Text("Suggestions for this phase")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundStyle(ClioTheme.textMuted)
-
-                    Spacer()
                 }
-                .padding(.vertical, 12)
-                .padding(.horizontal, 16)
-                .background(ClioTheme.surface)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-            }
-            .buttonStyle(.plain)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 28)
+                .background(ClioTheme.sand.opacity(0.18))
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            } else {
+                // Chronological list of today's meals
+                VStack(spacing: 0) {
+                    ForEach(Array(todayMeals.sorted(by: { $0.dateTime < $1.dateTime }).enumerated()), id: \.element.id) { index, meal in
+                        Button {
+                            mealToEdit = meal
+                        } label: {
+                            loggedMealRow(meal: meal)
+                        }
+                        .buttonStyle(.plain)
 
-            // Expanded content
-            if isTipsSectionExpanded {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Tap any to add to a meal")
-                        .font(.caption)
-                        .foregroundStyle(ClioTheme.textMuted)
-                        .padding(.horizontal, 4)
-
-                    LazyVGrid(columns: [
-                        GridItem(.flexible(), spacing: 12),
-                        GridItem(.flexible(), spacing: 12),
-                        GridItem(.flexible(), spacing: 12)
-                    ], spacing: 12) {
-                        ForEach(Array(PhaseTipDatabase.foodTips(for: currentPhase).enumerated()), id: \.element.id) { index, tip in
-                            TipChip(tip: tip, colorIndex: index) {
-                                // Open AddMealView with this food pre-filled
-                                addMealSheet = AddMealSheetItem(prefilledTip: tip, preselectedMealType: nil)
-                            }
-                            .staggeredAppearance(index: index, delay: 0.03)
+                        if index < todayMeals.count - 1 {
+                            Divider()
+                                .background(ClioTheme.textMuted.opacity(0.15))
+                                .padding(.horizontal, 16)
                         }
                     }
                 }
+                .background(ClioTheme.sand.opacity(0.18))
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
         }
     }
+
+    private func loggedMealRow(meal: MealEntry) -> some View {
+        HStack(spacing: 12) {
+            // Meal type icon
+            ZStack {
+                Circle()
+                    .fill(ClioTheme.eatColor.opacity(0.12))
+                    .frame(width: 36, height: 36)
+
+                Image(systemName: meal.meal?.icon ?? "fork.knife")
+                    .font(.system(size: 14))
+                    .foregroundStyle(ClioTheme.eatColor)
+            }
+
+            // Meal info
+            VStack(alignment: .leading, spacing: 3) {
+                HStack {
+                    Text(meal.mealType)
+                        .font(ClioTheme.labelFont(15))
+                        .foregroundStyle(ClioTheme.text)
+
+                    Spacer()
+
+                    Text(timeFormatter.string(from: meal.dateTime))
+                        .font(ClioTheme.captionFont(12))
+                        .foregroundStyle(ClioTheme.textMuted)
+                }
+
+                if !meal.foodItems.isEmpty {
+                    Text(meal.foodItems.joined(separator: ", "))
+                        .font(ClioTheme.captionFont(12))
+                        .foregroundStyle(ClioTheme.textMuted)
+                        .lineLimit(1)
+                }
+
+                // Mood/energy tags
+                if meal.hasBodyResponse {
+                    HStack(spacing: 6) {
+                        ForEach(meal.bodyResponses.prefix(2), id: \.self) { response in
+                            if let br = MealEntry.BodyResponse(rawValue: response) {
+                                Text(br.rawValue)
+                                    .font(ClioTheme.captionFont(10))
+                                    .foregroundStyle(br.isPositive ? ClioTheme.sage : ClioTheme.terracotta)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 3)
+                                    .background((br.isPositive ? ClioTheme.sage : ClioTheme.terracotta).opacity(0.12))
+                                    .clipShape(Capsule())
+                            }
+                        }
+                    }
+                    .padding(.top, 2)
+                }
+            }
+        }
+        .padding(14)
+    }
+
+
 
 }
 

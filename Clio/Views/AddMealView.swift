@@ -30,9 +30,8 @@ struct AddMealView: View {
     @State private var saveAsTemplate: Bool = false
     @State private var templateName: String = ""
 
-    // Feel after prompt
-    @State private var showFeelAfterPrompt: Bool = false
-    @State private var savedMealEntry: MealEntry?
+    // Guard against double-tap saving
+    @State private var isSaving = false
 
     private var userSettings: UserSettings? {
         settings.first
@@ -133,13 +132,6 @@ struct AddMealView: View {
             }
             .safeAreaInset(edge: .bottom) {
                 saveButton
-            }
-            .sheet(isPresented: $showFeelAfterPrompt) {
-                if let meal = savedMealEntry {
-                    MealFeelAfterPrompt(meal: meal) {
-                        dismiss()
-                    }
-                }
             }
         }
     }
@@ -548,11 +540,11 @@ struct AddMealView: View {
             Button {
                 saveMeal()
             } label: {
-                Text("Save meal")
+                Text(isSaving ? "Saving..." : "Save meal")
             }
             .buttonStyle(ClioPrimaryButtonStyle())
-            .disabled(!hasFoodToSave)
-            .opacity(hasFoodToSave ? 1.0 : 0.5)
+            .disabled(!hasFoodToSave || isSaving)
+            .opacity(hasFoodToSave && !isSaving ? 1.0 : 0.5)
         }
         .padding()
         .background(
@@ -565,6 +557,9 @@ struct AddMealView: View {
     }
 
     private func saveMeal() {
+        guard !isSaving else { return }
+        isSaving = true
+
         // Auto-add any text in the input field before saving
         var allFoodItems = foodItems
         let pendingItem = currentFoodInput.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -625,89 +620,10 @@ struct AddMealView: View {
         }
 
         try? modelContext.save()
-
-        // Show feel after prompt
-        savedMealEntry = meal
-        showFeelAfterPrompt = true
+        dismiss()
     }
 }
 
-// MARK: - Meal Feel After Prompt
-struct MealFeelAfterPrompt: View {
-    @Environment(\.modelContext) private var modelContext
-    let meal: MealEntry
-    let onComplete: () -> Void
-
-    var body: some View {
-        VStack(spacing: 24) {
-            // Header
-            VStack(spacing: 8) {
-                Text("How did this meal make you feel?")
-                    .font(.title3)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(ClioTheme.text)
-                    .multilineTextAlignment(.center)
-            }
-            .padding(.top, 32)
-
-            // Feel options - 3x2 grid
-            LazyVGrid(columns: [
-                GridItem(.flexible(), spacing: 12),
-                GridItem(.flexible(), spacing: 12),
-                GridItem(.flexible(), spacing: 12)
-            ], spacing: 12) {
-                ForEach(MealEntry.MealFeelAfter.allCases) { feel in
-                    Button {
-                        selectFeelAfter(feel)
-                    } label: {
-                        VStack(spacing: 6) {
-                            Image(systemName: feel.icon)
-                                .font(.system(size: 20))
-                            Text(feel.rawValue)
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                        }
-                        .foregroundStyle(ClioTheme.text)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(ClioTheme.surface)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(ClioTheme.surfaceHighlight, lineWidth: 1)
-                        )
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(.horizontal)
-
-            Spacer()
-
-            // Skip button
-            Button {
-                onComplete()
-            } label: {
-                Text("Skip")
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundStyle(ClioTheme.textMuted)
-            }
-            .padding(.bottom, 32)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(ClioTheme.background)
-        .presentationDetents([.medium])
-        .presentationDragIndicator(.visible)
-    }
-
-    private func selectFeelAfter(_ feel: MealEntry.MealFeelAfter) {
-        meal.feelAfter = feel.rawValue
-        meal.updatedAt = Date()
-        try? modelContext.save()
-        onComplete()
-    }
-}
 
 // MARK: - Food Item Chip
 struct FoodItemChip: View {

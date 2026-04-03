@@ -17,8 +17,8 @@ class CorrelationEngine {
     /// Minimum complete cycles for cycle-aware insights
     static let minCycles = 2
 
-    /// Minimum correlation rate (60%)
-    static let minCorrelationRate = 0.60
+    /// Minimum correlation rate (70%)
+    static let minCorrelationRate = 0.70
 
     /// Minimum days of data required for insights
     static let minDaysOfData = 3
@@ -27,7 +27,7 @@ class CorrelationEngine {
     static let minAboveBaseline = 0.15
 
     /// Minimum occurrences to establish a pattern
-    static let minOccurrences = 3
+    static let minOccurrences = 5
 
     // MARK: - Data Requirements Check
 
@@ -1125,12 +1125,21 @@ struct DiscoveredPattern {
         let phasePrefix = cyclePhase != nil ? "During \(cyclePhase!.lowercased()), " : ""
         let stateDescription = formatOutcome(outcome)
 
+        // Format trigger with proper verb context
+        let triggerAction: String = {
+            switch category {
+            case .food: return "Eating \(trigger.lowercased())"
+            case .movement: return "\(trigger) sessions"
+            default: return trigger
+            }
+        }()
+
         switch insightType {
         case .crossSignal:
-            return "\(phasePrefix)\(trigger) has lined up with feeling \(stateDescription)"
+            return "\(phasePrefix)\(triggerAction) lined up with feeling \(stateDescription)"
 
         case .cycleAware:
-            return "\(phasePrefix)\(trigger) has lined up with feeling \(stateDescription)"
+            return "\(phasePrefix)\(triggerAction) lined up with feeling \(stateDescription)"
 
         case .consistency:
             if trigger == "Movement streak" {
@@ -1148,7 +1157,7 @@ struct DiscoveredPattern {
             return "On days your \(trigger.lowercased()), you tend to feel \(stateDescription)"
 
         case .checkinPhase:
-            return "You tend to report \(trigger) more often during \(cyclePhase?.lowercased() ?? "this") phase"
+            return "You tend to report \(trigger.lowercased()) more often during \(cyclePhase?.lowercased() ?? "this") phase"
 
         case .movementFeelingCheckin:
             return "On days your workout left you feeling \(trigger), you also checked in as \(stateDescription)"

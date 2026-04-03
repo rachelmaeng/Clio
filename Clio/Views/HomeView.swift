@@ -109,6 +109,7 @@ struct HomeView: View {
                     }
                 }
                 .padding(.horizontal, ClioTheme.spacing)
+                .padding(.bottom, 100)
             }
             .scrollIndicators(.hidden)
             .ignoresSafeArea(edges: .top)
@@ -440,18 +441,12 @@ struct HomeView: View {
                             .foregroundStyle(ClioTheme.eatColor)
 
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Meals logged")
-                                .font(ClioTheme.captionFont(11))
-                                .foregroundStyle(ClioTheme.textMuted)
-                            Text("\(todayMeals.count) of 3")
+                            Text("\(todayMeals.count)")
                                 .font(ClioTheme.labelFont(15))
                                 .foregroundStyle(ClioTheme.text)
-                            if !mealTypesSummary.isEmpty {
-                                Text(mealTypesSummary)
-                                    .font(ClioTheme.captionFont(11))
-                                    .foregroundStyle(ClioTheme.textMuted)
-                                    .lineLimit(1)
-                            }
+                            Text(todayMeals.count == 1 ? "meal today" : "meals today")
+                                .font(ClioTheme.captionFont(11))
+                                .foregroundStyle(ClioTheme.textMuted)
                         }
 
                         Spacer()

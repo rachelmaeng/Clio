@@ -37,60 +37,67 @@ struct MoveView: View {
         todayMovements.compactMap { $0.estimatedCaloriesBurned }.reduce(0, +)
     }
 
+    /// Weekly stats
+    private var weekMovements: [MovementEntry] {
+        let cal = Calendar.current
+        let now = Date()
+        let weekday = cal.component(.weekday, from: now)
+        let startOfWeek = cal.date(byAdding: .day, value: -(weekday - 1), to: cal.startOfDay(for: now))!
+        return movements.filter { $0.dateTime >= startOfWeek }
+    }
+
+    private var weekSessions: Int { weekMovements.count }
+
+    private var weekHours: Double {
+        Double(weekMovements.compactMap { $0.durationMinutes }.reduce(0, +)) / 60.0
+    }
+
+private var weekDateRange: String {
+        let cal = Calendar.current
+        let now = Date()
+        let weekday = cal.component(.weekday, from: now)
+        let start = cal.date(byAdding: .day, value: -(weekday - 1), to: cal.startOfDay(for: now))!
+        let end = cal.date(byAdding: .day, value: 6, to: start)!
+        let f = DateFormatter()
+        f.dateFormat = "MMM d"
+        return "\(f.string(from: start))-\(Calendar.current.component(.day, from: end))"
+    }
+
+    /// Most recent movement with mood tag
+    private var recentMovement: MovementEntry? {
+        movements.first
+    }
+
     var body: some View {
         NavigationStack {
             ZStack {
-                // Background layer to prevent white flash
                 ClioTheme.background
                     .withGrain(opacity: 0.025)
                     .ignoresSafeArea()
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: ClioTheme.spacingLarge) {
-                        // Hero illustration - full width
-                        // No fadeInFromBottom on hero to prevent white flash
+                        // Hero illustration
                         moveHero
                             .padding(.horizontal, -ClioTheme.spacing)
 
-                        // Header with phase context
-                        phaseHeader
+                        // Weekly stats bar
+                        weeklyStatsBar
                             .fadeInFromBottom(delay: 0.05)
 
-                        // Category Tiles (2x3 grid) - primary logging method
-                        categoryGrid
+                        // Log Movement section label + colored tiles
+                        movementTilesSection
                             .fadeInFromBottom(delay: 0.1)
 
-                        // Today's Log Section (only if movements exist)
-                        if !todayMovements.isEmpty {
-                            todayLogSection
-                                .fadeInFromBottom(delay: 0.15)
-                        }
+                        // Recent section
+                        recentSection
+                            .fadeInFromBottom(delay: 0.15)
                     }
                     .padding(.horizontal, ClioTheme.spacing)
                     .padding(.bottom, 100)
                 }
                 .scrollContentBackground(.hidden)
                 .ignoresSafeArea(edges: .top)
-
-                // Custom add button overlay
-                VStack {
-                    HStack {
-                        Spacer()
-                        Button {
-                            addMovementSheet = AddMovementSheetItem(preselectedType: nil, preselectedCategory: nil)
-                        } label: {
-                            Image(systemName: "plus")
-                                .font(.title3.weight(.semibold))
-                                .foregroundStyle(ClioTheme.moveColor)
-                                .frame(width: 44, height: 44)
-                                .background(ClioTheme.surface.opacity(0.9))
-                                .clipShape(Circle())
-                        }
-                        .padding(.trailing, ClioTheme.spacing)
-                    }
-                    .padding(.top, 60)
-                    Spacer()
-                }
             }
             .navigationBarTitleDisplayMode(.inline)
             .sheet(item: $addMovementSheet) { item in
@@ -164,121 +171,221 @@ struct MoveView: View {
         return Image(systemName: "photo")
     }
 
-    // MARK: - Phase Header
-    private var phaseHeader: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("Move")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .foregroundStyle(ClioTheme.text)
-
-                Spacer()
-
-                // Today's summary
-                if todayMinutes > 0 {
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text("\(todayMinutes) min")
-                            .font(.headline)
-                            .foregroundStyle(ClioTheme.text)
-
-                        if userSettings?.showCalorieBurnEstimate == true && todayCaloriesBurned > 0 {
-                            Text("~\(todayCaloriesBurned) cal burned")
-                                .font(.caption)
-                                .foregroundStyle(ClioTheme.textMuted)
-                        }
-                    }
-                }
-            }
-
-            // Phase context - subtle
-            HStack(spacing: 6) {
-                Circle()
-                    .fill(ClioTheme.phaseColor(for: currentPhase))
-                    .frame(width: 8, height: 8)
-
-                Text(currentPhase.description)
-                    .font(.subheadline)
-                    .foregroundStyle(ClioTheme.textMuted)
-            }
-        }
-    }
-
-    // MARK: - Today's Log Section
-    private var todayLogSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("Today")
-                    .font(.headline)
-                    .foregroundStyle(ClioTheme.text)
-
-                Spacer()
-
-                Text("\(todayMovements.count) workout\(todayMovements.count == 1 ? "" : "s")")
-                    .font(.caption)
-                    .foregroundStyle(ClioTheme.textMuted)
-            }
-
-            VStack(spacing: 0) {
-                ForEach(todayMovements.prefix(5), id: \.id) { movement in
-                    MovementLogRow(
-                        movement: movement,
-                        showCalories: userSettings?.showCalorieBurnEstimate ?? false,
-                        onDelete: { deleteMovement(movement) }
-                    )
-                    .padding(.vertical, 8)
-
-                    if movement.id != todayMovements.prefix(5).last?.id {
-                        Divider()
-                            .background(ClioTheme.textMuted.opacity(0.2))
-                    }
-                }
-            }
-            .padding()
-            .background(ClioTheme.surface)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-        }
-    }
-
     private func deleteMovement(_ movement: MovementEntry) {
         modelContext.delete(movement)
         try? modelContext.save()
     }
 
-    // MARK: - Category Grid
-    private var categoryGrid: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Quick log by type")
-                    .font(.headline)
-                    .foregroundStyle(ClioTheme.text)
+    // MARK: - Weekly Stats Bar
+    private var weeklyStatsBar: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("THIS WEEK")
+                    .font(ClioTheme.captionFont(11))
+                    .fontWeight(.medium)
+                    .foregroundStyle(ClioTheme.textMuted)
+                    .tracking(0.5)
 
-                Text("Tap any to start logging")
-                    .font(.caption)
+                Spacer()
+
+                Text(weekDateRange)
+                    .font(ClioTheme.captionFont(12))
                     .foregroundStyle(ClioTheme.textMuted)
             }
+
+            HStack(spacing: 0) {
+                // Sessions
+                VStack(spacing: 4) {
+                    Text("\(weekSessions)")
+                        .font(ClioTheme.headingFont(28))
+                        .foregroundStyle(ClioTheme.text)
+                    Text("sessions")
+                        .font(ClioTheme.captionFont(11))
+                        .foregroundStyle(ClioTheme.textMuted)
+                }
+                .frame(maxWidth: .infinity)
+
+                // Divider
+                Rectangle()
+                    .fill(ClioTheme.textMuted.opacity(0.15))
+                    .frame(width: 1, height: 40)
+
+                // Hours
+                VStack(spacing: 4) {
+                    Text(String(format: "%.1f", weekHours))
+                        .font(ClioTheme.headingFont(28))
+                        .foregroundStyle(ClioTheme.text)
+                    Text("hours")
+                        .font(ClioTheme.captionFont(11))
+                        .foregroundStyle(ClioTheme.textMuted)
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .padding(.vertical, 16)
+            .background(ClioTheme.surface)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+    }
+
+    // MARK: - Movement Tiles (colored earth tone grid)
+    private struct MoveTileOption: Identifiable {
+        let label: String
+        let subtitle: String
+        let icon: String
+        let color: Color
+        let category: MovementEntry.MovementCategory
+        var id: String { label }
+    }
+
+    private var moveTileOptions: [MoveTileOption] {
+        [
+            MoveTileOption(label: "Yoga", subtitle: "Stretch and breathe", icon: "figure.yoga", color: ClioTheme.sage, category: .flexibility),
+            MoveTileOption(label: "Strength", subtitle: "Weights or bodyweight", icon: "dumbbell.fill", color: ClioTheme.terracotta, category: .strength),
+            MoveTileOption(label: "Walk", subtitle: "Outdoor or treadmill", icon: "figure.walk", color: Color(hex: "B8A99A"), category: .cardio),
+            MoveTileOption(label: "Other", subtitle: "Dance, swim, cycle", icon: "figure.run", color: Color(hex: "B07878"), category: .custom),
+        ]
+    }
+
+    private var movementTilesSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("LOG MOVEMENT")
+                .font(ClioTheme.captionFont(11))
+                .fontWeight(.medium)
+                .foregroundStyle(ClioTheme.textMuted)
+                .tracking(0.5)
 
             LazyVGrid(columns: [
                 GridItem(.flexible(), spacing: 12),
                 GridItem(.flexible(), spacing: 12)
             ], spacing: 12) {
-                ForEach(MovementEntry.MovementCategory.allCases) { category in
-                    CategoryTile(category: category) {
-                        handleCategoryTap(category)
+                ForEach(moveTileOptions) { option in
+                    Button {
+                        handleMoveTileTap(option)
+                    } label: {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Image(systemName: option.icon)
+                                .font(.system(size: 22, weight: .medium))
+                                .foregroundStyle(.white)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(option.label)
+                                    .font(ClioTheme.labelFont(15))
+                                    .foregroundStyle(.white)
+
+                                Text(option.subtitle)
+                                    .font(ClioTheme.captionFont(11))
+                                    .foregroundStyle(.white.opacity(0.75))
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(16)
+                        .frame(height: 110)
+                        .background(option.color)
+                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                     }
+                    .buttonStyle(ScaleButtonStyle())
                 }
             }
         }
     }
 
-    private func handleCategoryTap(_ category: MovementEntry.MovementCategory) {
+    private func handleMoveTileTap(_ option: MoveTileOption) {
+        let category = option.category
         let types = category.movementTypes
         if types.count == 1, let type = types.first {
-            // Go directly to AddMovementView with type pre-selected
             addMovementSheet = AddMovementSheetItem(preselectedType: type, preselectedCategory: category)
         } else {
-            // Show subtypes sheet
             selectedCategory = category
+        }
+    }
+
+    // MARK: - Recent Section
+    private var recentSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("RECENT")
+                    .font(ClioTheme.captionFont(11))
+                    .fontWeight(.medium)
+                    .foregroundStyle(ClioTheme.textMuted)
+                    .tracking(0.5)
+
+                Spacer()
+
+                Text("View all")
+                    .font(ClioTheme.captionFont(12))
+                    .foregroundStyle(ClioTheme.moveColor)
+            }
+
+            if let recent = recentMovement {
+                HStack(spacing: 12) {
+                    ZStack {
+                        Circle()
+                            .fill(ClioTheme.moveColor.opacity(0.12))
+                            .frame(width: 40, height: 40)
+
+                        Image(systemName: recent.movementType?.icon ?? "figure.run")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundStyle(ClioTheme.moveColor)
+                    }
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(recent.type)
+                            .font(ClioTheme.labelFont(15))
+                            .foregroundStyle(ClioTheme.text)
+
+                        HStack(spacing: 6) {
+                            if Calendar.current.isDateInToday(recent.dateTime) {
+                                Text("Today")
+                                    .font(ClioTheme.captionFont(12))
+                                    .foregroundStyle(ClioTheme.textMuted)
+                            } else {
+                                Text("Yesterday")
+                                    .font(ClioTheme.captionFont(12))
+                                    .foregroundStyle(ClioTheme.textMuted)
+                            }
+
+                            if let mins = recent.durationMinutes {
+                                Text("· \(mins) min")
+                                    .font(ClioTheme.captionFont(12))
+                                    .foregroundStyle(ClioTheme.textMuted)
+                            }
+                        }
+                    }
+
+                    Spacer()
+
+                    // Mood tag
+                    if recent.hasFeelData {
+                        let positive = recent.feelAfter.compactMap { MovementEntry.FeelAfter(rawValue: $0) }.filter { $0.isPositive }.count
+                        let total = recent.feelAfter.count
+                        let isGood = positive > total / 2
+                        Text(isGood ? "Great" : "Tough")
+                            .font(ClioTheme.captionFont(11))
+                            .foregroundStyle(isGood ? ClioTheme.sage : ClioTheme.terracotta)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background((isGood ? ClioTheme.sage : ClioTheme.terracotta).opacity(0.12))
+                            .clipShape(Capsule())
+
+                        Text("energy")
+                            .font(ClioTheme.captionFont(10))
+                            .foregroundStyle(ClioTheme.textMuted)
+                    }
+                }
+                .padding(14)
+                .background(ClioTheme.surface)
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            } else {
+                HStack {
+                    Text("No recent activity")
+                        .font(ClioTheme.captionFont(13))
+                        .foregroundStyle(ClioTheme.textMuted)
+                    Spacer()
+                }
+                .padding(14)
+                .background(ClioTheme.surface)
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            }
         }
     }
 
@@ -358,30 +465,17 @@ struct CategorySubtypesSheet: View {
                     .ignoresSafeArea()
 
                 VStack(alignment: .leading, spacing: 24) {
-                    // Header
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack(spacing: 10) {
-                            ZStack {
-                                Circle()
-                                    .fill(tileColor.opacity(0.15))
-                                    .frame(width: 44, height: 44)
+                    // Header — padded top to clear the navigation bar close button
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(category.rawValue)
+                            .font(ClioTheme.headingFont(22))
+                            .foregroundStyle(ClioTheme.text)
 
-                                Image(systemName: category.icon)
-                                    .font(.system(size: 20, weight: .medium))
-                                    .foregroundStyle(tileColor)
-                            }
-
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(category.rawValue)
-                                    .font(ClioTheme.headingFont(22))
-                                    .foregroundStyle(ClioTheme.text)
-
-                                Text(category.subtitle)
-                                    .font(ClioTheme.captionFont(13))
-                                    .foregroundStyle(ClioTheme.textMuted)
-                            }
-                        }
+                        Text(category.subtitle)
+                            .font(ClioTheme.captionFont(13))
+                            .foregroundStyle(ClioTheme.textMuted)
                     }
+                    .padding(.top, 8)
 
                     // Movement type options
                     VStack(spacing: 0) {
@@ -426,7 +520,7 @@ struct CategorySubtypesSheet: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: .topBarTrailing) {
                     ClioCloseButton { dismiss() }
                 }
             }

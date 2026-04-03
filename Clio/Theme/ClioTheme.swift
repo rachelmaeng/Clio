@@ -48,10 +48,10 @@ enum ClioTheme {
     static let cycleColor = Color(hex: "B8939A")  // Muted mauve for cycle
 
     // MARK: - Cycle Phase Colors (Earth Tone Variants)
-    static let menstrualPhase = Color(hex: "E8998D")     // Coral
-    static let follicularPhase = Color(hex: "6B7F59")    // Olive green
-    static let ovulationPhase = Color(hex: "C9A962")     // Dusty gold
-    static let lutealPhase = Color(hex: "B8939A")        // Muted mauve
+    static let menstrualPhase = Color(hex: "C4788A")     // Dusty rose
+    static let follicularPhase = Color(hex: "7A9E7E")    // Sage green
+    static let ovulationPhase = Color(hex: "D4A843")     // Warm amber/gold
+    static let lutealPhase = Color(hex: "B07355")        // Terracotta
 
     // MARK: - Whole Food Score Colors
     static let wholeFood = Color(hex: "8A9A7D")
